@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Lead {
+  id             String   @id @default(uuid())
+  situation      String
+  priceRange     String
+  employment     String
+  downPayment    String
+  creditScore    String
+  
+  // Dynamic fields for specific campaigns
+  campaign       String   @default("general")
+  timeline       String?
+  location       String?
+  rawAnswers     Json?
+  
+  // Contact Info
+  firstName      String
+  lastName       String
+  email          String
+  phone          String
+
+  status         String   @default("NEW") // NEW, CONTACTED, SOLD
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Lender {
+  id             String   @id @default(uuid())
+  clerkId        String?  @unique
+  firstName      String?
+  lastName       String?
+  companyName    String?
+  nmls           String?
+  phone          String?
+  email          String   @unique
+  stripeId       String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
