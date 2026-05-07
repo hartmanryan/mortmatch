@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { formatDistanceToNow } from "date-fns";
 
 export default async function DashboardPage() {
-  let leads = [];
+  let leads: any[] = [];
   try {
     leads = await prisma.lead.findMany({
       orderBy: { createdAt: "desc" },
