@@ -61,10 +61,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   useEffect(() => {
     if (isAiChatMode && aiMessages.length === 0) {
       // @ts-ignore: AI SDK mismatch on message content type
-      sendMessage({ 
-        role: "user", 
-        content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` 
-      });
+      sendMessage({ role: "user", content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` });
     }
   }, [isAiChatMode, aiMessages.length, sendMessage, answers, matchedLender]);
 
