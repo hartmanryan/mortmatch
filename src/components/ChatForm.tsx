@@ -24,6 +24,13 @@ type FormMessage = {
   text: string;
 };
 
+// Helper to extract text from a UIMessage regardless of SDK version
+const getMsgText = (msg: any): string => {
+  if (typeof msg.content === 'string') return msg.content;
+  if (Array.isArray(msg.parts)) return msg.parts.map((p: any) => p.text || '').join('');
+  return '';
+};
+
 export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   const [formMessages, setFormMessages] = useState<FormMessage[]>([
     { id: "1", sender: "mort", text: steps[0].question }
@@ -53,15 +60,13 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   const handleAiSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiInput.trim()) return;
-    // @ts-ignore: AI SDK mismatch on message content type
-    sendMessage({ role: "user", content: aiInput.trim() });
+    sendMessage({ role: "user", parts: [{ type: "text", text: aiInput.trim() }] } as any);
     setAiInput("");
   };
 
   useEffect(() => {
     if (isAiChatMode && aiMessages.length === 0) {
-      // @ts-ignore: AI SDK mismatch on message content type
-      sendMessage({ role: "user", content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` });
+      sendMessage({ role: "user", parts: [{ type: "text", text: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` }] } as any);
     }
   }, [isAiChatMode, aiMessages.length, sendMessage, answers, matchedLender]);
 
@@ -187,8 +192,8 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
           ))}
 
           {/* AI Streaming Chat Messages (Skip the hidden trigger message) */}
-          {isAiChatMode && aiMessages.filter(m => {
-            const text = m.content || (m.parts ? m.parts.map((p: any) => p.text || '').join('') : '');
+          {isAiChatMode && aiMessages.filter((m: any) => {
+            const text = getMsgText(m);
             return !text.startsWith("I just submitted my profile");
           }).map((msg) => (
             <motion.div
@@ -209,7 +214,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
                     ? "bg-orange-500 text-white rounded-br-none" 
                     : "bg-white text-slate-700 border border-slate-100 rounded-bl-none"
                 }`}>
-                  <div className="prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (msg.content || (msg.parts ? msg.parts.map((p: any) => p.text || '').join('') : '')).replace(/\n/g, '<br/>') }} />
+                  <div className="prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: getMsgText(msg).replace(/\n/g, '<br/>') }} />
                 </div>
               </div>
             </motion.div>
@@ -250,8 +255,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
               <button 
                 onClick={(e) => {
                   e.currentTarget.style.display = 'none';
-                  // @ts-ignore: AI SDK mismatch on message content type
-                  sendMessage({ role: "user", content: `No thanks, tell ${matchedLender.name} to email me instead.` });
+                  sendMessage({ role: "user", parts: [{ type: "text", text: `No thanks, tell ${matchedLender.name} to email me instead.` }] } as any);
                 }}
                 className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm sm:text-base w-full max-w-[320px]"
               >
