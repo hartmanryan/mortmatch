@@ -39,7 +39,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   const [isAiChatMode, setIsAiChatMode] = useState(false);
   const [matchedLender, setMatchedLender] = useState<{name: string, phone: string} | null>(null);
 
-  const { messages: aiMessages, append: sendMessage, status } = useChat({
+  const { messages: aiMessages, sendMessage, status } = useChat({
     // @ts-ignore: Vercel AI SDK version mismatch on type definitions
     body: { campaignName }
   });
