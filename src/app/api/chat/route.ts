@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   // Load the robust knowledge base directly from the markdown file based on the campaign
   const filename = campaignName === 'reverse' ? 'reverseknowledge.md' : 'knowledge.md';
-  const knowledgePath = path.join(process.cwd(), filename);
+  const knowledgePath = path.join(process.cwd(), 'src', 'data', filename);
   const knowledgeBase = await fs.readFile(knowledgePath, 'utf8');
 
   const systemPrompt = `
