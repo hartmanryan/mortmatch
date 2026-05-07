@@ -60,13 +60,13 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   const handleAiSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiInput.trim()) return;
-    sendMessage({ role: "user", parts: [{ type: "text", text: aiInput.trim() }] } as any);
+    sendMessage({ role: "user", content: aiInput.trim() } as any);
     setAiInput("");
   };
 
   useEffect(() => {
     if (isAiChatMode && aiMessages.length === 0) {
-      sendMessage({ role: "user", parts: [{ type: "text", text: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` }] } as any);
+      sendMessage({ role: "user", content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` } as any);
     }
   }, [isAiChatMode, aiMessages.length, sendMessage, answers, matchedLender]);
 
@@ -255,7 +255,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
               <button 
                 onClick={(e) => {
                   e.currentTarget.style.display = 'none';
-                  sendMessage({ role: "user", parts: [{ type: "text", text: `No thanks, tell ${matchedLender.name} to email me instead.` }] } as any);
+                  sendMessage({ role: "user", content: `No thanks, tell ${matchedLender.name} to email me instead.` } as any);
                 }}
                 className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm sm:text-base w-full max-w-[320px]"
               >

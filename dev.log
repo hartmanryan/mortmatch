@@ -1,0 +1,19 @@
+
+> mortmatch@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 11524, using available port 3001 instead.
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://10.0.0.170:3001
+- Environments: .env
+✓ Ready in 1085ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          11524
+- Dir:          C:\Users\propk\Desktop\mortmatch
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 11524 /F to stop it.
+[?25h
