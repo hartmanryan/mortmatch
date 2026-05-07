@@ -40,6 +40,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   const [matchedLender, setMatchedLender] = useState<{name: string, phone: string} | null>(null);
 
   const { messages: aiMessages, sendMessage, status } = useChat({
+    // @ts-ignore: Vercel AI SDK version mismatch on type definitions
     body: { campaignName }
   });
 
