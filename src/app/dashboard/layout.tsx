@@ -57,7 +57,7 @@ export default function DashboardLayout({
 
         <div className="p-4 border-t border-slate-200 flex items-center justify-between">
           <span className="text-sm font-medium text-slate-600">My Account</span>
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
         </div>
       </aside>
 
