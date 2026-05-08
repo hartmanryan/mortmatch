@@ -28,26 +28,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing clerkId or email" }, { status: 400 });
     }
 
-    // Upsert the lender record
-    const lender = await prisma.lender.upsert({
-      where: { clerkId },
-      update: {
-        firstName,
-        lastName,
-        companyName,
-        nmls,
-        phone,
-      },
-      create: {
-        clerkId,
-        email,
-        firstName,
-        lastName,
-        companyName,
-        nmls,
-        phone,
-      }
-    });
+    // Check if lender exists by email first (in case it was manually created before Clerk login)
+    let lender = await prisma.lender.findUnique({ where: { email } });
+
+    if (lender) {
+      // Update existing record
+      lender = await prisma.lender.update({
+        where: { email },
+        data: {
+          clerkId, // Update clerkId in case it was null
+          firstName,
+          lastName,
+          companyName,
+          nmls,
+          phone,
+        }
+      });
+    } else {
+      // Create new record
+      lender = await prisma.lender.create({
+        data: {
+          clerkId,
+          email,
+          firstName,
+          lastName,
+          companyName,
+          nmls,
+          phone,
+        }
+      });
+    }
 
     return NextResponse.json({ success: true, lender });
   } catch (error) {
