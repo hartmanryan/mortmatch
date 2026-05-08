@@ -25,6 +25,12 @@ model Lead {
   lastName       String
   email          String
   phone          String
+  street         String?
+  city           String?
+  state          String?
+  
+  // Chat Data
+  chatTranscript Json?
 
   status         String   @default("NEW") // NEW, CONTACTED, SOLD
   createdAt      DateTime @default(now())

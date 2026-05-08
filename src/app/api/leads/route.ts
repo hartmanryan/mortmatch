@@ -46,6 +46,9 @@ export async function POST(request: Request) {
           lastName,
           email: contact.email,
           phone: contact.phone || 'Unknown',
+          street: contact.street || null,
+          city: contact.city || null,
+          state: contact.state || null,
           situation,
           priceRange,
           employment,
@@ -82,6 +85,7 @@ export async function POST(request: Request) {
             <p><strong>Name:</strong> ${firstName} ${lastName}</p>
             <p><strong>Email:</strong> ${contact.email}</p>
             <p><strong>Phone:</strong> ${contact.phone}</p>
+            <p><strong>Address:</strong> ${contact.street || 'N/A'}, ${contact.city || 'N/A'}, ${contact.state || 'N/A'}</p>
             <hr />
             <h3>Lead Questionnaire Answers:</h3>
             ${Object.entries(answers).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}

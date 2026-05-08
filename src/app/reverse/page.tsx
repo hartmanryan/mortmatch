@@ -25,7 +25,7 @@ const REVERSE_STEPS: StepData[] = [
   },
   {
     id: "contact",
-    question: "Almost done! What's the best name and email to send your customized reverse mortgage matches to?",
+    question: "Great, I'm starting to do some research in the background, Let me know what state you might need mortgage financing in and some other contact details and I'll be able to point you in a really good direction right after...",
     isInput: true,
   }
 ];

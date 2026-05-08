@@ -8,11 +8,7 @@ const FIRST_TIME_STEPS: StepData[] = [
     question: "Hi there! I'm Mort. 👋 I'm so excited to help you buy your very first home! First question: How soon do you want to buy?",
     options: ["ASAP", "1-3 months", "3-6 months", "Just exploring right now"],
   },
-  {
-    id: "location",
-    question: "Awesome. What city and state are you thinking about buying in?",
-    // No options means it will show a free-text input
-  },
+
   {
     id: "priceRange",
     question: "Got it! What price range are you potentially shopping in?",
@@ -35,7 +31,7 @@ const FIRST_TIME_STEPS: StepData[] = [
   },
   {
     id: "contact",
-    question: "Almost done! What's the best name and email to send your first-time buyer matches to?",
+    question: "Great, I'm starting to do some research in the background, Let me know what state you might need mortgage financing in and some other contact details and I'll be able to point you in a really good direction right after...",
     isInput: true,
   }
 ];

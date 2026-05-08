@@ -37,7 +37,14 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   ]);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [contact, setContact] = useState({ name: "", email: "", phone: "" });
+  const [contact, setContact] = useState({ name: "", email: "", phone: "", state: "", street: "", city: "" });
+  const US_STATES = [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+  ];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -45,10 +52,11 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   
   const [isAiChatMode, setIsAiChatMode] = useState(false);
   const [matchedLender, setMatchedLender] = useState<{name: string, phone: string} | null>(null);
+  const [leadId, setLeadId] = useState<string | null>(null);
 
   const { messages: aiMessages, sendMessage, status } = useChat({
     // @ts-ignore: Vercel AI SDK version mismatch on type definitions
-    body: { campaignName }
+    body: { campaignName, leadProfile: answers, lenderName: matchedLender?.name, leadId }
   });
 
   const [aiInput, setAiInput] = useState("");
@@ -80,6 +88,21 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
     return () => clearTimeout(timeout);
   }, [formMessages, aiMessages, isTyping, currentStep]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setContact(prev => ({
+        ...prev,
+        name: params.get('name') || prev.name,
+        email: params.get('email') || prev.email,
+        phone: params.get('phone') || prev.phone,
+        state: params.get('state') || prev.state,
+        street: params.get('street') || prev.street,
+        city: params.get('city') || prev.city,
+      }));
+    }
+  }, []);
+
   const handleOptionSelect = (option: string) => {
     const stepId = steps[currentStep].id;
     setFormMessages(prev => [...prev, { id: Date.now().toString(), sender: "user", text: option }]);
@@ -109,7 +132,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!contact.name || !contact.email || !contact.phone) return;
+    if (!contact.name || !contact.email || !contact.phone || !contact.state || !contact.street || !contact.city) return;
 
     setFormMessages(prev => [...prev, { id: Date.now().toString(), sender: "user", text: `${contact.name} (${contact.email})` }]);
     setIsSubmitting(true);
@@ -130,6 +153,9 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
         
         if (data.lenderPhone && data.lenderName) {
           setMatchedLender({ name: data.lenderName, phone: data.lenderPhone });
+        }
+        if (data.leadId) {
+          setLeadId(data.leadId);
         }
         
         setIsAiChatMode(true);
@@ -239,7 +265,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
             </motion.div>
           )}
 
-          {isAiChatMode && matchedLender && aiMessages.length > 1 && (
+          {isAiChatMode && matchedLender && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -247,9 +273,9 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
             >
               <a 
                 href={`sms:${matchedLender.phone}?&body=${encodeURIComponent(`Hi ${matchedLender.name}, Mortmatch just paired us! I'd love to quickly chat about my mortgage options.`)}`}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl shadow-lg font-bold flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 text-sm sm:text-base w-full max-w-[320px]"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow-md font-medium flex items-center justify-center gap-2 transition-colors text-sm max-w-[200px]"
               >
-                📞 Call or Text {matchedLender.name} Now @ {matchedLender.phone}
+                Text {matchedLender.name} @ {matchedLender.phone}
               </a>
               
               <button 
@@ -257,9 +283,9 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
                   e.currentTarget.style.display = 'none';
                   sendMessage({ role: "user", content: `No thanks, tell ${matchedLender.name} to email me instead.` } as any);
                 }}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm sm:text-base w-full max-w-[320px]"
+                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm max-w-[200px]"
               >
-                ✉️ No Thanks, Tell {matchedLender.name} to email me
+                Book a Meeting With {matchedLender.name}
               </button>
             </motion.div>
           )}
@@ -327,9 +353,17 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
                   <input required type="tel" value={contact.phone} onChange={e => setContact({...contact, phone: e.target.value})} placeholder="Phone" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
                 <div className="flex gap-2">
+                  <input required type="text" value={contact.street} onChange={e => setContact({...contact, street: e.target.value})} placeholder="Street Address" className="flex-[2] border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input required type="text" value={contact.city} onChange={e => setContact({...contact, city: e.target.value})} placeholder="City" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+                <div className="flex gap-2">
                   <input required type="email" value={contact.email} onChange={e => setContact({...contact, email: e.target.value})} placeholder="Email Address" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium w-32">
-                    {isSubmitting ? "Sending..." : <><Send className="w-4 h-4" /> Send</>}
+                  <select required value={contact.state} onChange={e => setContact({...contact, state: e.target.value})} className="w-24 border border-slate-200 rounded-xl px-2 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <option value="" disabled>State</option>
+                    {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium min-w-[120px]">
+                    {isSubmitting ? "Sending..." : <>Continue <Send className="w-4 h-4" /></>}
                   </button>
                 </div>
               </form>
