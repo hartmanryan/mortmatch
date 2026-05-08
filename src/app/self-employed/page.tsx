@@ -2,27 +2,26 @@ import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 
-const FIRST_TIME_STEPS: StepData[] = [
+const SELF_EMPLOYED_STEPS: StepData[] = [
   {
-    id: "timeline",
-    question: "Hi there! I'm Mort. 👋 I'm so excited to help you buy your very first home! First question: How soon do you want to buy?",
-    options: ["ASAP", "1-3 months", "3-6 months", "Just exploring right now"],
-  },
-
-  {
-    id: "priceRange",
-    question: "Got it! What price range are you potentially shopping in?",
-    options: ["Under $200k", "$200k - $500k", "$500k - $1 Million", "$1 Million+"],
+    id: "goal",
+    question: "Hi there! I'm Mort. 👋 Self-employed mortgages are my specialty! First, what is your primary goal?",
+    options: ["Buy a Home", "Refinance My Rate", "Cash Out Refinance", "Just Exploring"],
   },
   {
-    id: "employment",
-    question: "Nice! And how are you currently employed?",
-    options: ["Employed - W2 Earner", "Self Employed - 1099 / K1", "Not Employed"],
+    id: "businessType",
+    question: "Got it. How is your business currently structured?",
+    options: ["Sole Proprietor / 1099", "LLC", "S-Corp or C-Corp", "Partnership"],
   },
   {
-    id: "downPayment",
-    question: "How much do you have saved up for a down payment?",
-    options: ["Less Than $5,000", "$5,000 - $20,000", "$20,000 - $50,000", "$50,000+"],
+    id: "timeInBusiness",
+    question: "How long have you been self-employed in this business?",
+    options: ["Less than 1 year", "1 to 2 years", "2+ years"],
+  },
+  {
+    id: "bankStatements",
+    question: "Many self-employed loans use bank statements instead of tax returns. Do you have 12 or 24 months of business or personal bank statements available?",
+    options: ["12 Months", "24 Months", "I prefer using Tax Returns", "I'm not sure"],
   },
   {
     id: "creditScore",
@@ -36,7 +35,7 @@ const FIRST_TIME_STEPS: StepData[] = [
   }
 ];
 
-export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
+export default async function SelfEmployedPage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
 
@@ -74,7 +73,9 @@ export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchP
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="relative w-[280px] h-14">
-              <Image src="/mortlogo.png" alt="MortMatch" fill className="object-contain object-left" />
+              <a href="/">
+                <Image src="/mortlogo.png" alt="MortMatch" fill className="object-contain object-left" />
+              </a>
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -100,12 +101,12 @@ export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchP
         <div className="text-center mb-8 max-w-2xl flex flex-col items-center">
           
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-4 leading-tight">
-            Chat With Mort &amp; Find The Perfect <span className="text-orange-500">First Time</span> HomeBuyer Mortgage
+            Chat With Mort To Find Your Perfect <span className="text-orange-500">Self-Employed</span> Mortgage
           </h1>
         </div>
 
         <div className="w-full">
-          <ChatForm steps={FIRST_TIME_STEPS} campaignName="first-time-buyer" />
+          <ChatForm steps={SELF_EMPLOYED_STEPS} campaignName="self-employed" />
         </div>
         
         <div className="mt-12 text-center text-slate-400 text-sm font-medium">

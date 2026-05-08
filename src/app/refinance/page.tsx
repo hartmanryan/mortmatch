@@ -2,27 +2,26 @@ import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 
-const FIRST_TIME_STEPS: StepData[] = [
+const REFINANCE_STEPS: StepData[] = [
+  {
+    id: "goal",
+    question: "Hi there! I'm Mort. 👋 I can help you explore your refinance options. First, what is your primary goal for refinancing?",
+    options: ["Lower My Rate", "Cash Out", "Pay Off Debt", "Shorten Loan Term"],
+  },
   {
     id: "timeline",
-    question: "Hi there! I'm Mort. 👋 I'm so excited to help you buy your very first home! First question: How soon do you want to buy?",
-    options: ["ASAP", "1-3 months", "3-6 months", "Just exploring right now"],
-  },
-
-  {
-    id: "priceRange",
-    question: "Got it! What price range are you potentially shopping in?",
-    options: ["Under $200k", "$200k - $500k", "$500k - $1 Million", "$1 Million+"],
+    question: "Got it! How soon would you like to complete this refinance?",
+    options: ["ASAP", "1-3 months", "Just exploring right now"],
   },
   {
-    id: "employment",
-    question: "Nice! And how are you currently employed?",
-    options: ["Employed - W2 Earner", "Self Employed - 1099 / K1", "Not Employed"],
+    id: "currentBalance",
+    question: "What is your estimated current mortgage balance?",
+    options: ["Under $100k", "$100k - $250k", "$250k - $500k", "$500k+"],
   },
   {
-    id: "downPayment",
-    question: "How much do you have saved up for a down payment?",
-    options: ["Less Than $5,000", "$5,000 - $20,000", "$20,000 - $50,000", "$50,000+"],
+    id: "homeValue",
+    question: "And what is your home currently worth (estimated)?",
+    options: ["Under $200k", "$200k - $400k", "$400k - $700k", "$700k+"],
   },
   {
     id: "creditScore",
@@ -36,7 +35,7 @@ const FIRST_TIME_STEPS: StepData[] = [
   }
 ];
 
-export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
+export default async function RefinancePage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
 
@@ -74,7 +73,9 @@ export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchP
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="relative w-[280px] h-14">
-              <Image src="/mortlogo.png" alt="MortMatch" fill className="object-contain object-left" />
+              <a href="/">
+                <Image src="/mortlogo.png" alt="MortMatch" fill className="object-contain object-left" />
+              </a>
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -87,7 +88,6 @@ export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchP
               <div className="absolute top-full right-0 mt-0 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden flex flex-col z-50">
                 <a href="/first" className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">First Time Buyer</a>
                 <a href="/refinance" className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Refinance</a>
-                <a href="/self-employed" className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Self Employed</a>
                 <a href="/reverse" className="px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600">Reverse Mortgage</a>
               </div>
             </div>
@@ -100,12 +100,12 @@ export default async function FirstTimeHomeBuyerPage({ searchParams }: { searchP
         <div className="text-center mb-8 max-w-2xl flex flex-col items-center">
           
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-4 leading-tight">
-            Chat With Mort &amp; Find The Perfect <span className="text-orange-500">First Time</span> HomeBuyer Mortgage
+            Chat With Mort To Find Your Perfect <span className="text-orange-500">Refinance</span> Option
           </h1>
         </div>
 
         <div className="w-full">
-          <ChatForm steps={FIRST_TIME_STEPS} campaignName="first-time-buyer" />
+          <ChatForm steps={REFINANCE_STEPS} campaignName="refinance" />
         </div>
         
         <div className="mt-12 text-center text-slate-400 text-sm font-medium">

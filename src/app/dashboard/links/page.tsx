@@ -26,6 +26,20 @@ const CAMPAIGNS = [
     description: "Specialized HECM consultation flow for seniors looking to access home equity.",
     path: "/reverse",
     color: "amber"
+  },
+  {
+    id: "refinance",
+    name: "Refinance",
+    description: "Dedicated flow for homeowners seeking to lower rates, cash out, or change terms.",
+    path: "/refinance",
+    color: "emerald"
+  },
+  {
+    id: "self-employed",
+    name: "Self-Employed",
+    description: "Tailored bank statement and alternative income documentation flow for business owners.",
+    path: "/self-employed",
+    color: "purple"
   }
 ];
 
