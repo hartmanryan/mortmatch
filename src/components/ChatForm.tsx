@@ -103,6 +103,18 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
     }
   }, []);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.length > 10) val = val.slice(0, 10);
+    let formatted = val;
+    if (val.length > 3 && val.length <= 6) {
+      formatted = `${val.slice(0, 3)}-${val.slice(3)}`;
+    } else if (val.length > 6) {
+      formatted = `${val.slice(0, 3)}-${val.slice(3, 6)}-${val.slice(6)}`;
+    }
+    setContact({ ...contact, phone: formatted });
+  };
+
   const handleOptionSelect = (option: string) => {
     const stepId = steps[currentStep].id;
     setFormMessages(prev => [...prev, { id: Date.now().toString(), sender: "user", text: option }]);
@@ -132,9 +144,9 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!contact.name || !contact.email || !contact.phone || !contact.state || !contact.street || !contact.city) return;
+    if (!contact.name || !contact.phone || !contact.state) return;
 
-    setFormMessages(prev => [...prev, { id: Date.now().toString(), sender: "user", text: `${contact.name} (${contact.email})` }]);
+    setFormMessages(prev => [...prev, { id: Date.now().toString(), sender: "user", text: `${contact.name} (${contact.phone})` }]);
     setIsSubmitting(true);
     setIsTyping(true);
 
@@ -349,16 +361,11 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
             ) : (
               <form onSubmit={handleContactSubmit} className="flex flex-col gap-3">
                 <input required type="text" value={contact.name} onChange={e => setContact({...contact, name: e.target.value})} placeholder="Your Name" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                <input required type="email" value={contact.email} onChange={e => setContact({...contact, email: e.target.value})} placeholder="Email Address" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                <input required type="tel" value={contact.phone} onChange={e => setContact({...contact, phone: e.target.value})} placeholder="Phone" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                <input required type="text" value={contact.street} onChange={e => setContact({...contact, street: e.target.value})} placeholder="Street Address" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                <div className="flex gap-3">
-                  <input required type="text" value={contact.city} onChange={e => setContact({...contact, city: e.target.value})} placeholder="City" className="flex-[2] border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  <select required value={contact.state} onChange={e => setContact({...contact, state: e.target.value})} className="flex-1 border border-slate-200 rounded-xl px-2 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                    <option value="" disabled>State</option>
-                    {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
+                <input required type="tel" value={contact.phone} onChange={handlePhoneChange} placeholder="Phone (e.g. 555-555-5555)" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <select required value={contact.state} onChange={e => setContact({...contact, state: e.target.value})} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white text-slate-700">
+                  <option value="" disabled>State Where You Need Financing</option>
+                  {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
                 <button type="submit" disabled={isSubmitting} className="mt-2 w-full bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium">
                   {isSubmitting ? "Sending..." : <>Continue <Send className="w-4 h-4" /></>}
                 </button>

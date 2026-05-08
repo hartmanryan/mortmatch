@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         data: {
           firstName,
           lastName,
-          email: contact.email,
+          email: contact.email || `${contact.phone.replace(/\D/g, '') || 'unknown'}@noemail.com`,
           phone: contact.phone || 'Unknown',
           street: contact.street || null,
           city: contact.city || null,
