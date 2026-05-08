@@ -348,24 +348,20 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
               </form>
             ) : (
               <form onSubmit={handleContactSubmit} className="flex flex-col gap-3">
-                <div className="flex gap-2">
-                  <input required type="text" value={contact.name} onChange={e => setContact({...contact, name: e.target.value})} placeholder="Your Name" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  <input required type="tel" value={contact.phone} onChange={e => setContact({...contact, phone: e.target.value})} placeholder="Phone" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div className="flex gap-2">
-                  <input required type="text" value={contact.street} onChange={e => setContact({...contact, street: e.target.value})} placeholder="Street Address" className="flex-[2] border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  <input required type="text" value={contact.city} onChange={e => setContact({...contact, city: e.target.value})} placeholder="City" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div className="flex gap-2">
-                  <input required type="email" value={contact.email} onChange={e => setContact({...contact, email: e.target.value})} placeholder="Email Address" className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  <select required value={contact.state} onChange={e => setContact({...contact, state: e.target.value})} className="w-24 border border-slate-200 rounded-xl px-2 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <input required type="text" value={contact.name} onChange={e => setContact({...contact, name: e.target.value})} placeholder="Your Name" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="email" value={contact.email} onChange={e => setContact({...contact, email: e.target.value})} placeholder="Email Address" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="tel" value={contact.phone} onChange={e => setContact({...contact, phone: e.target.value})} placeholder="Phone" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input required type="text" value={contact.street} onChange={e => setContact({...contact, street: e.target.value})} placeholder="Street Address" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <div className="flex gap-3">
+                  <input required type="text" value={contact.city} onChange={e => setContact({...contact, city: e.target.value})} placeholder="City" className="flex-[2] border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <select required value={contact.state} onChange={e => setContact({...contact, state: e.target.value})} className="flex-1 border border-slate-200 rounded-xl px-2 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                     <option value="" disabled>State</option>
                     {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium min-w-[120px]">
-                    {isSubmitting ? "Sending..." : <>Continue <Send className="w-4 h-4" /></>}
-                  </button>
                 </div>
+                <button type="submit" disabled={isSubmitting} className="mt-2 w-full bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium">
+                  {isSubmitting ? "Sending..." : <>Continue <Send className="w-4 h-4" /></>}
+                </button>
               </form>
             )}
           </motion.div>
