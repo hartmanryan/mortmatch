@@ -10,6 +10,20 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Logo Colors Override */
+  --color-blue-100: #e8f2f8;
+  --color-blue-500: #2376a8; /* Lighter shade of logo blue for standard use */
+  --color-blue-600: #1a5a80; /* Exact Logo Blue */
+  --color-blue-700: #134563; /* Darker shade for hover states */
+
+  --color-orange-100: #fef3e6;
+  --color-orange-500: #f78707; /* Exact Logo Orange */
+  --color-orange-600: #d67406; /* Darker shade for hover states */
+  
+  --color-amber-100: #fef3e6;
+  --color-amber-500: #f78707; /* Map amber to logo orange as well */
+  --color-amber-600: #d67406;
 }
 
 @media (prefers-color-scheme: dark) {

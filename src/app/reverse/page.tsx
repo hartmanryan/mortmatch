@@ -104,23 +104,25 @@ export default async function ReverseMortgagePage({ searchParams }: { searchPara
         </div>
       </main>
 
-      {/* Compliance Footer */}
-      {lender && (
-        <footer className="relative border-t border-slate-200 bg-white/50 py-8 mt-auto z-10">
-          <div className="container mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
-            <p className="font-semibold text-slate-700">Provided by {lender.firstName} {lender.lastName}</p>
-            {lender.companyName && <p>{lender.companyName}</p>}
-            {lender.nmls && <p>NMLS #{lender.nmls}</p>}
-            {lender.phone && <p>Phone: {lender.phone}</p>}
-            <p className="pt-4 text-slate-400 max-w-2xl mx-auto">
-              This site is not authorized by the New York State Department of Financial Services. No mortgage solicitation activity or loan applications for properties located in the State of New York can be facilitated through this site.
-            </p>
-            <div className="pt-6">
-              <a href="/pro" className="text-blue-500 hover:text-blue-600 transition-colors">Mortgage Pro? Click Here</a>
-            </div>
+      {/* Footer */}
+      <footer className="relative border-t border-slate-200 bg-white/50 py-8 mt-auto z-10">
+        <div className="container mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
+          {lender && (
+            <>
+              <p className="font-semibold text-slate-700">Provided by {lender.firstName} {lender.lastName}</p>
+              {lender.companyName && <p>{lender.companyName}</p>}
+              {lender.nmls && <p>NMLS #{lender.nmls}</p>}
+              {lender.phone && <p>Phone: {lender.phone}</p>}
+              <p className="pt-4 text-slate-400 max-w-2xl mx-auto">
+                This site is not authorized by the New York State Department of Financial Services. No mortgage solicitation activity or loan applications for properties located in the State of New York can be facilitated through this site.
+              </p>
+            </>
+          )}
+          <div className="pt-6">
+            <a href="/pro" className="text-blue-500 hover:text-blue-600 transition-colors">Mortgage Pro? Click Here</a>
           </div>
-        </footer>
-      )}
+        </div>
+      </footer>
     </div>
   );
 }
