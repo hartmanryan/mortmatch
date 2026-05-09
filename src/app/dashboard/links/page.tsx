@@ -76,25 +76,36 @@ export default function CampaignLinksPage() {
               </div>
             </div>
 
-            <div className="mt-auto pt-6 flex gap-3">
-              <button
-                onClick={() => handleCopy(campaign.path, campaign.id)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
-              >
-                {copiedId === campaign.id ? (
-                  <><Check className="w-4 h-4 text-emerald-400" /> Copied!</>
-                ) : (
-                  <><Copy className="w-4 h-4" /> Copy Link</>
-                )}
-              </button>
+            <div className="mt-auto pt-6 flex flex-col gap-3">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleCopy(campaign.path, campaign.id)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                >
+                  {copiedId === campaign.id ? (
+                    <><Check className="w-4 h-4 text-emerald-400" /> Copied!</>
+                  ) : (
+                    <><Copy className="w-4 h-4" /> Copy Link</>
+                  )}
+                </button>
+                
+                <Link
+                  href={user ? `${campaign.path}?ref=${user.id}` : campaign.path}
+                  target="_blank"
+                  className="flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-colors border border-slate-200"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
+              </div>
               
-              <Link
-                href={user ? `${campaign.path}?ref=${user.id}` : campaign.path}
+              <a 
+                href="https://api.leadconnectorhq.com/widget/bookings/ryan-hartman-personal-calendar-iaf4mhk9e" 
                 target="_blank"
-                className="flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-colors border border-slate-200"
+                rel="noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
               >
-                <ExternalLink className="w-4 h-4" />
-              </Link>
+                Get Leads From This Page
+              </a>
             </div>
           </div>
         ))}
