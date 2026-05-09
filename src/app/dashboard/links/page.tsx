@@ -98,14 +98,12 @@ export default function CampaignLinksPage() {
                 </Link>
               </div>
               
-              <a 
-                href="https://api.leadconnectorhq.com/widget/bookings/ryan-hartman-personal-calendar-iaf4mhk9e" 
-                target="_blank"
-                rel="noreferrer"
+              <Link 
+                href="/dashboard/leads" 
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
               >
                 Get Leads From This Page
-              </a>
+              </Link>
             </div>
           </div>
         ))}
