@@ -55,7 +55,7 @@ export async function POST(request: Request) {
           downPayment,
           creditScore,
           campaign: campaign || "general",
-          timeline,
+          timeline: contact.preferredTime || timeline,
           location,
           rawAnswers: answers, // Save the complete dynamic answers object
           status: 'NEW',
@@ -71,7 +71,58 @@ export async function POST(request: Request) {
     let lenderPhone = lender?.phone || null;
     let lenderName = lender ? `${lender.firstName || ''} ${lender.lastName || ''}`.trim() : null;
 
-    // 3. Send Email Notification via Resend (fire and forget)
+    // 3. Send SMS via Twilio (if configured)
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const twilioFromNumber = process.env.TWILIO_PHONE_NUMBER;
+    const repPhoneNumber = lenderPhone;
+
+    if (twilioAccountSid && twilioAuthToken && twilioFromNumber && repPhoneNumber) {
+      try {
+        const cleanedRepPhone = repPhoneNumber.replace(/\D/g, '');
+        // Format the message
+        let smsText = `New Lead on MortMatch!\n\n`;
+        smsText += `Name: ${firstName} ${lastName}\n`;
+        smsText += `Phone: ${contact.phone}\n`;
+        if (contact.preferredTime) smsText += `Preferred Call Time: ${contact.preferredTime}\n`;
+        smsText += `Situation: ${situation}\n`;
+        if (creditScore && creditScore !== "Unknown") smsText += `Credit Score: ${creditScore}\n`;
+        if (priceRange && priceRange !== "Unknown") smsText += `Price Range: ${priceRange}\n`;
+        if (downPayment && downPayment !== "Unknown") smsText += `Down Payment: ${downPayment}\n`;
+        if (contact.state) smsText += `State: ${contact.state}\n`;
+        smsText += `\nReply directly to lead at: ${contact.phone}`;
+
+        const basicAuth = Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString('base64');
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+
+        console.log(`Sending SMS to rep ${cleanedRepPhone} from ${twilioFromNumber}...`);
+        const twilioResponse = await fetch(twilioUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${basicAuth}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            To: cleanedRepPhone,
+            From: twilioFromNumber,
+            Body: smsText
+          })
+        });
+
+        if (!twilioResponse.ok) {
+          const errText = await twilioResponse.text();
+          console.error("Twilio SMS send failed:", errText);
+        } else {
+          console.log("Twilio SMS sent successfully.");
+        }
+      } catch (smsError) {
+        console.error("Error sending Twilio SMS:", smsError);
+      }
+    } else {
+      console.warn("Twilio credentials or representative phone number missing. Skipping SMS notification.");
+    }
+
+    // 4. Send Email Notification via Resend (fire and forget)
     try {
       if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.startsWith("re_")) {
         const notifyEmail = lender?.email || process.env.ADMIN_EMAIL || 'propknocks@gmail.com';

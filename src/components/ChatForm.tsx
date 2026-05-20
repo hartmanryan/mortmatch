@@ -16,6 +16,8 @@ export type StepData = {
 type ChatFormProps = {
   steps: StepData[];
   campaignName: string;
+  lenderName?: string;
+  lenderPhone?: string;
 };
 
 type FormMessage = {
@@ -31,13 +33,13 @@ const getMsgText = (msg: any): string => {
   return '';
 };
 
-export default function ChatForm({ steps, campaignName }: ChatFormProps) {
+export default function ChatForm({ steps, campaignName, lenderName, lenderPhone }: ChatFormProps) {
   const [formMessages, setFormMessages] = useState<FormMessage[]>([
     { id: "1", sender: "mort", text: steps[0].question }
   ]);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [contact, setContact] = useState({ name: "", email: "", phone: "", state: "", street: "", city: "" });
+  const [contact, setContact] = useState({ name: "", phone: "", state: "", email: "", city: "", street: "" });
   const US_STATES = [
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
     "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
@@ -50,16 +52,34 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const [isAiChatMode, setIsAiChatMode] = useState(false);
-  const [matchedLender, setMatchedLender] = useState<{name: string, phone: string} | null>(null);
+  const [isAiChatMode, setIsAiChatMode] = useState(campaignName === "connect");
+  const [matchedLender, setMatchedLender] = useState<{name: string, phone: string} | null>(
+    lenderName && lenderPhone ? { name: lenderName, phone: lenderPhone } : null
+  );
   const [leadId, setLeadId] = useState<string | null>(null);
+
+  const refId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("ref") : null;
 
   const { messages: aiMessages, sendMessage, status } = useChat({
     // @ts-ignore: Vercel AI SDK version mismatch on type definitions
-    body: { campaignName, leadProfile: answers, lenderName: matchedLender?.name, leadId }
+    body: { campaignName, leadProfile: answers, lenderName: matchedLender?.name, lenderPhone: matchedLender?.phone, leadId, refId },
+    initialMessages: campaignName === "connect" ? [
+      { id: "init-connect", role: "assistant" as const, content: steps[0].question }
+    ] : []
   });
 
   const [aiInput, setAiInput] = useState("");
+  const [showTextCta, setShowTextCta] = useState(false);
+
+  useEffect(() => {
+    if (campaignName === "connect") {
+      const timer = setTimeout(() => {
+        setShowTextCta(true);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [campaignName]);
+
 
   const handleAiInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAiInput(e.target.value);
@@ -73,10 +93,30 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   };
 
   useEffect(() => {
-    if (isAiChatMode && aiMessages.length === 0) {
+    if (isAiChatMode && aiMessages.length === 0 && campaignName !== "connect") {
       sendMessage({ role: "user", content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` } as any);
     }
-  }, [isAiChatMode, aiMessages.length, sendMessage, answers, matchedLender]);
+  }, [isAiChatMode, aiMessages.length, sendMessage, answers, matchedLender, campaignName]);
+
+  useEffect(() => {
+    const toolMsg = aiMessages.find(
+      m => (m.role as string) === "tool" && 
+      typeof (m as any).content === "string" && 
+      (m as any).content.includes("leadId")
+    );
+    if (toolMsg) {
+      try {
+        const data = JSON.parse((toolMsg as any).content);
+        if (data.leadId && data.leadId !== leadId) {
+          setLeadId(data.leadId);
+        }
+      } catch (e) {
+        console.error("Error parsing tool message content:", e);
+      }
+    }
+  }, [aiMessages, leadId]);
+
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -91,17 +131,69 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      setContact(prev => ({
-        ...prev,
-        name: params.get('name') || prev.name,
-        email: params.get('email') || prev.email,
-        phone: params.get('phone') || prev.phone,
-        state: params.get('state') || prev.state,
-        street: params.get('street') || prev.street,
-        city: params.get('city') || prev.city,
-      }));
+      const first = params.get('first') || "";
+      const last = params.get('last') || "";
+      const queryName = params.get('name') || (first || last ? `${first} ${last}`.trim() : "");
+      const queryEmail = params.get('email') || "";
+      const queryPhone = params.get('phone') || "";
+      const queryAddress = params.get('address') || "";
+      const queryState = params.get('state') || "";
+      const queryStreet = params.get('street') || queryAddress;
+      const queryCity = params.get('city') || "";
+
+      if (queryName || queryEmail || queryPhone) {
+        setContact({
+          name: queryName,
+          email: queryEmail,
+          phone: queryPhone,
+          state: queryState,
+          street: queryStreet,
+          city: queryCity,
+        });
+
+        // Automatically register the lead in the dashboard
+        const registerLead = async () => {
+          try {
+            const response = await fetch("/api/leads", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                answers: {},
+                contact: {
+                  name: queryName,
+                  email: queryEmail,
+                  phone: queryPhone,
+                  state: queryState,
+                  street: queryStreet,
+                  city: queryCity,
+                },
+                campaign: campaignName,
+                refId,
+              }),
+            });
+            const data = await response.json();
+            if (data.success) {
+              setLeadId(data.leadId);
+            }
+          } catch (e) {
+            console.error("Auto lead registration failed:", e);
+          }
+        };
+        registerLead();
+      } else {
+        // Simple fallback parsing for standard query params
+        setContact(prev => ({
+          ...prev,
+          name: params.get('name') || prev.name,
+          email: params.get('email') || prev.email,
+          phone: params.get('phone') || prev.phone,
+          state: params.get('state') || prev.state,
+          street: params.get('street') || prev.street,
+          city: params.get('city') || prev.city,
+        }));
+      }
     }
-  }, []);
+  }, [campaignName, refId]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/\D/g, '');
@@ -170,8 +262,22 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
           setLeadId(data.leadId);
         }
         
-        setIsAiChatMode(true);
-        setCurrentStep(steps.length);
+        if (campaignName === "connect") {
+          setIsAiChatMode(false);
+          const lenderDisplayName = data.lenderName || "your mortgage pro";
+          setFormMessages(prev => [
+            ...prev,
+            {
+              id: Date.now().toString(),
+              sender: "mort",
+              text: `Awesome, ${contact.name}! I've successfully connected you with ${lenderDisplayName}. They have been texted your situation and will text you back at ${contact.phone} shortly! 📱`
+            }
+          ]);
+          setCurrentStep(steps.length);
+        } else {
+          setIsAiChatMode(true);
+          setCurrentStep(steps.length);
+        }
       } else {
         setFormMessages(prev => [...prev, { id: Date.now().toString(), sender: "mort", text: "Oops, something went wrong on my end. Please try refreshing!" }]);
       }
@@ -229,10 +335,13 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
             </motion.div>
           ))}
 
-          {/* AI Streaming Chat Messages (Skip the hidden trigger message) */}
+          {/* AI Streaming Chat Messages (Skip trigger, system, tool, and empty messages) */}
           {isAiChatMode && aiMessages.filter((m: any) => {
+            if (m.role === "system" || m.role === "tool") return false;
             const text = getMsgText(m);
-            return !text.startsWith("I just submitted my profile");
+            if (text.startsWith("I just submitted my profile")) return false;
+            if (!text.trim()) return false;
+            return true;
           }).map((msg) => (
             <motion.div
               key={msg.id}
@@ -277,7 +386,7 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
             </motion.div>
           )}
 
-          {isAiChatMode && matchedLender && (
+          {isAiChatMode && matchedLender && campaignName !== "connect" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -345,25 +454,35 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
                 ))}
               </div>
             ) : currentStepData.id !== "contact" ? (
-              <form onSubmit={handleTextInputSubmit} className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
-                  placeholder="Type your answer..."
-                  className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                  autoFocus
-                />
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium">
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
+              <div className="flex flex-col gap-1 w-full">
+                {campaignName === "connect" && currentStep === 0 && (
+                  <div className="text-left text-lg text-slate-400 pl-2 select-none animate-bounce">
+                    👇
+                  </div>
+                )}
+                <form onSubmit={handleTextInputSubmit} className="flex gap-2 w-full">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    placeholder="Type your answer..."
+                    className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    autoFocus
+                  />
+                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium">
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
             ) : (
               <form onSubmit={handleContactSubmit} className="flex flex-col gap-3">
+                <div className="flex justify-center gap-2 text-slate-400 text-sm animate-bounce mb-1">
+                  <span>👇</span><span>👇</span><span>👇</span>
+                </div>
                 <input required type="text" value={contact.name} onChange={e => setContact({...contact, name: e.target.value})} placeholder="Your Name" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 <input required type="tel" value={contact.phone} onChange={handlePhoneChange} placeholder="Phone (e.g. 555-555-5555)" className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 <select required value={contact.state} onChange={e => setContact({...contact, state: e.target.value})} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white text-slate-700">
-                  <option value="" disabled>State Where You Need Financing</option>
+                  <option value="" disabled>State where you might need financing</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
                 <button type="submit" disabled={isSubmitting} className="mt-2 w-full bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium">
@@ -378,21 +497,38 @@ export default function ChatForm({ steps, campaignName }: ChatFormProps) {
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full"
+            className="w-full flex flex-col gap-1.5"
           >
-            <form onSubmit={handleAiSubmit} className="flex gap-2">
-              <input
-                type="text"
-                value={aiInput}
-                onChange={handleAiInputChange}
-                placeholder="Ask Mort a question..."
-                className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-                autoFocus
-              />
-              <button type="submit" className="bg-orange-500 text-white px-4 py-2 rounded-xl hover:bg-orange-600 transition-colors flex items-center gap-2 font-medium">
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+            <>
+              {campaignName === "connect" && (
+                <div className="text-left text-lg text-slate-400 pl-2 select-none animate-bounce">
+                  👇
+                </div>
+              )}
+              <form onSubmit={handleAiSubmit} className="flex gap-2 w-full">
+                <input
+                  type="text"
+                  value={aiInput}
+                  onChange={handleAiInputChange}
+                  placeholder="Type Your Response Here"
+                  className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                  autoFocus
+                />
+                <button type="submit" className="bg-orange-500 text-white px-4 py-2 rounded-xl hover:bg-orange-600 transition-colors flex items-center gap-2 font-medium">
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </>
+            {campaignName === "connect" && showTextCta && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center text-sm sm:text-base text-orange-600 mt-6 font-bold bg-orange-50/40 py-2.5 px-4 rounded-xl border border-orange-100/60 shadow-sm"
+              >
+                Optional - Send A Text Message To <a href={`sms:${matchedLender?.phone || "215-900-4065"}`} className="underline hover:text-orange-700">{matchedLender?.phone || "215-900-4065"}</a> To Talk With A Real Human Now
+              </motion.div>
+            )}
           </motion.div>
         )}
       </div>

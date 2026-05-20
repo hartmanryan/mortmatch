@@ -1,8 +1,9 @@
 import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
+import { GoogleGenAI } from "@google/genai";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string }> }) {
+export default async function ConnectPage({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
   const headline = params.h;
@@ -30,6 +31,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
     }
   }
 
+  const originatorPhone = lender?.phone || "(our team)";
+
   const firstQuestion = topic
     ? `Hi I'm Mort, a well trained mortgage AI. Looks like you're looking to learn more about ${topic}?`
     : `Hi I'm Mort, a well trained mortgage AI. How can we help today?`;
@@ -49,7 +52,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
 
   const pageHeadline = topic 
     ? `Get Fast Answers To ${topic} Now` 
-    : (headline || "Get Fast Answers To Your Mortgage Questions Now");
+    : "Get Fast Answers To Your Mortgage Questions Now";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/30 flex flex-col">
