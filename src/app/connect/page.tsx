@@ -102,6 +102,8 @@ export default async function ConnectPage({ searchParams }: { searchParams: Prom
             campaignName="connect" 
             lenderName={lender ? `${lender.firstName || ""} ${lender.lastName || ""}`.trim() : undefined} 
             lenderPhone={lender?.phone || undefined} 
+            topic={topic}
+            chatslug={chatslug}
           />
         </div>
         

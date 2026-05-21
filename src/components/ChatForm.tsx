@@ -18,6 +18,8 @@ type ChatFormProps = {
   campaignName: string;
   lenderName?: string;
   lenderPhone?: string;
+  topic?: string;
+  chatslug?: string;
 };
 
 type FormMessage = {
@@ -33,7 +35,7 @@ const getMsgText = (msg: any): string => {
   return '';
 };
 
-export default function ChatForm({ steps, campaignName, lenderName, lenderPhone }: ChatFormProps) {
+export default function ChatForm({ steps, campaignName, lenderName, lenderPhone, topic, chatslug }: ChatFormProps) {
   const [formMessages, setFormMessages] = useState<FormMessage[]>([
     { id: "1", sender: "mort", text: steps[0].question }
   ]);
@@ -62,7 +64,7 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone 
 
   const { messages: aiMessages, sendMessage, status } = useChat({
     // @ts-ignore: Vercel AI SDK version mismatch on type definitions
-    body: { campaignName, leadProfile: answers, lenderName: matchedLender?.name, lenderPhone: matchedLender?.phone, leadId, refId },
+    body: { campaignName, leadProfile: answers, lenderName: matchedLender?.name, lenderPhone: matchedLender?.phone, leadId, refId, topic, chatslug },
     initialMessages: campaignName === "connect" ? [
       { id: "init-connect", role: "assistant" as const, content: steps[0].question }
     ] : []

@@ -99,6 +99,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
             campaignName="connect" 
             lenderName={lender ? `${lender.firstName || ""} ${lender.lastName || ""}`.trim() : undefined} 
             lenderPhone={lender?.phone || undefined} 
+            topic={topic}
+            chatslug={chatslug}
           />
         </div>
         

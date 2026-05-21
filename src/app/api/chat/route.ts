@@ -144,7 +144,7 @@ function sanitizeMessages(messages: any[]): any[] {
 }
 
 export async function POST(req: Request) {
-  const { messages: rawMessages, leadProfile, lenderName, lenderPhone, campaignName, leadId, refId } = await req.json();
+  const { messages: rawMessages, leadProfile, lenderName, lenderPhone, campaignName, leadId, refId, topic, chatslug } = await req.json();
   const messages = sanitizeMessages(rawMessages);
 
   const filename = campaignName === 'reverse' ? 'reverseknowledge.md' : 'knowledge.md';
@@ -162,18 +162,25 @@ export async function POST(req: Request) {
       ? `You are Mort, a friendly, professional AI mortgage assistant. You are the assistant to ${lenderName}.`
       : `You are Mort, a friendly, professional, and helpful AI mortgage assistant.`;
 
+    const campaignContext = (chatslug || topic)
+      ? `CONTEXT: The user has arrived on a customized campaign page about: "${chatslug || topic}". The welcome greeting they saw was: "Looks like you're looking to learn more about ${chatslug || topic}?". They expect to chat specifically about this topic (${chatslug || topic}). Do NOT ask generic qualifying questions such as "are you looking to buy your first home, refinance, or something else" unless it is directly related to their topic. Immediately address, advise, and focus the conversation on "${chatslug || topic}".`
+      : "";
+
     systemPrompt = `
       ${knowledgeBase}
 
       ${assistantRole}
 
+      ${campaignContext}
+
       YOUR SPECIFIC CONVERSATION GOALS:
       1. Answer any mortgage-related questions the user asks clearly, concisely, and supportively. Keep the conversation going naturally, answering questions and educating the user first.
-      2. After the chat has naturally occurred a bit (e.g. after answering 1-2 questions and providing some educational value), your objective is to naturally let the person know that they can text the mortgage professional at their direct number: ${lenderPhone || "215-900-4065"} right now to talk directly with a real human.
-      3. Tell them they can text that number for immediate assistance. Do NOT collect contact details, ask for their phone number, or present any forms. Just provide this phone number naturally in the flow of conversation.
-      4. Do NOT refer to "our top lender", "your matched lender", or "matched lender" under any circumstances.
-      5. If a representative name is provided (${lenderName || ""}), always refer to them directly by their name. Otherwise, refer to them as "a specialist" or "a mortgage specialist".
-      6. Keep replies friendly, concise, and helpful.
+      2. Since the user is inquiring about "${chatslug || topic || "mortgages"}", tailor all replies, recommendations, and explanations to center around this topic.
+      3. After the chat has naturally occurred a bit (e.g. after answering 1-2 questions and providing some educational value), your objective is to naturally let the person know that they can text the mortgage professional at their direct number: ${lenderPhone || "215-900-4065"} right now to talk directly with a real human.
+      4. Tell them they can text that number for immediate assistance. Do NOT collect contact details, ask for their phone number, or present any forms. Just provide this phone number naturally in the flow of conversation.
+      5. Do NOT refer to "our top lender", "your matched lender", or "matched lender" under any circumstances.
+      6. If a representative name is provided (${lenderName || ""}), always refer to them directly by their name. Otherwise, refer to them as "a specialist" or "a mortgage specialist".
+      7. Keep replies friendly, concise, and helpful.
     `;
   } else {
     systemPrompt = `
