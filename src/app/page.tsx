@@ -48,7 +48,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
   ];
 
   const pageHeadline = topic 
-    ? `Get Fast Answers To ${topic} Now` 
+    ? topic 
     : (headline || "Get Fast Answers To Your Mortgage Questions Now");
 
   return (

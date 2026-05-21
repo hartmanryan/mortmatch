@@ -51,8 +51,8 @@ export default async function ConnectPage({ searchParams }: { searchParams: Prom
   ];
 
   const pageHeadline = topic 
-    ? `Get Fast Answers To ${topic} Now` 
-    : "Get Fast Answers To Your Mortgage Questions Now";
+    ? topic 
+    : (headline || "Get Fast Answers To Your Mortgage Questions Now");
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/30 flex flex-col">
