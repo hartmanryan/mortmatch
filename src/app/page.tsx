@@ -2,11 +2,12 @@ import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string, chatslug?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
   const headline = params.h;
   const topic = params.topic;
+  const chatslug = params.chatslug;
 
   let lender = null;
   if (ref) {
@@ -30,8 +31,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
     }
   }
 
-  const firstQuestion = topic
-    ? `Hi I'm Mort, a well trained mortgage AI. Looks like you're looking to learn more about ${topic}?`
+  const firstQuestion = (chatslug || topic)
+    ? `Hi I'm Mort, a well trained mortgage AI. Looks like you're looking to learn more about ${chatslug || topic}?`
     : `Hi I'm Mort, a well trained mortgage AI. How can we help today?`;
 
   const connectSteps: StepData[] = [
