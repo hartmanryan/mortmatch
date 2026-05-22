@@ -1,6 +1,7 @@
 import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 const ABOUT_STEPS: StepData[] = [
   {
@@ -94,11 +95,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      <footer className="relative border-t border-slate-200 bg-white/50 py-8 mt-auto z-10">
-        <div className="container mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
-          <p>© {new Date().getFullYear()} MortMatch. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

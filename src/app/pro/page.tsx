@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 export default function ProPage() {
   return (
@@ -60,9 +61,7 @@ export default function ProPage() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white/50 py-8 mt-auto text-center text-sm text-slate-500">
-        <p>© {new Date().getFullYear()} MortMatch. All rights reserved.</p>
-      </footer>
+      <Footer showProLink={false} />
     </div>
   );
 }
