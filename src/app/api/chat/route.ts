@@ -145,9 +145,76 @@ function sanitizeMessages(messages: any[]): any[] {
 
 export async function POST(req: Request) {
   const { messages: rawMessages, leadProfile, lenderName, lenderPhone, campaignName, leadId, refId, topic, chatslug } = await req.json();
+  console.log("=== API CHAT ROUTE INCOMING BODY ===", { campaignName, topic, chatslug, lenderName, lenderPhone, rawMessagesLength: rawMessages?.length });
+  console.log("=== API CHAT ROUTE RAW MESSAGES ===", JSON.stringify(rawMessages, null, 2));
   const messages = sanitizeMessages(rawMessages);
 
-  const filename = campaignName === 'reverse' ? 'reverseknowledge.md' : 'knowledge.md';
+  // Fallback: extract topic/chatslug from initial message if not provided in the body
+  let detectedTopic = topic || chatslug || "";
+  if (!detectedTopic && messages.length > 0) {
+    const firstMsg = messages.find(m => m.role === 'assistant');
+    if (firstMsg && typeof firstMsg.content === 'string') {
+      const match = firstMsg.content.match(/learn more about ([^?]+)\?/i);
+      if (match && match[1]) {
+        detectedTopic = match[1].trim();
+      }
+    }
+  }
+
+  const normalizedTopic = (detectedTopic || "").toLowerCase();
+  const normalizedCampaign = (campaignName || "").toLowerCase();
+
+  let filename = 'knowledge.md';
+
+  if (
+    normalizedCampaign === 'reverse' ||
+    normalizedTopic.includes('reverse') ||
+    normalizedTopic.includes('hecm') ||
+    normalizedTopic.includes('senior')
+  ) {
+    filename = 'reverseknowledge.md';
+  } else if (
+    normalizedCampaign === 'self-employed' ||
+    normalizedCampaign === 'selfemployed' ||
+    normalizedTopic.includes('self-employed') ||
+    normalizedTopic.includes('self employed') ||
+    normalizedTopic.includes('1099') ||
+    normalizedTopic.includes('bank statement') ||
+    normalizedTopic.includes('freelance') ||
+    normalizedTopic.includes('business owner') ||
+    normalizedTopic.includes('contractor')
+  ) {
+    filename = 'selfemployedknowledge.md';
+  } else if (
+    normalizedCampaign === 'refinance' ||
+    normalizedCampaign === 'refi' ||
+    normalizedTopic.includes('refinance') ||
+    normalizedTopic.includes('refi') ||
+    normalizedTopic.includes('lower payment') ||
+    normalizedTopic.includes('lower rate') ||
+    normalizedTopic.includes('cash out') ||
+    normalizedTopic.includes('cash-out') ||
+    normalizedTopic.includes('rate-and-term') ||
+    normalizedTopic.includes('rate and term')
+  ) {
+    filename = 'refinanceknowledge.md';
+  } else if (
+    normalizedCampaign === 'first-time' ||
+    normalizedCampaign === 'firsttime' ||
+    normalizedTopic.includes('first') ||
+    normalizedTopic.includes('dpa') ||
+    normalizedTopic.includes('assistance') ||
+    normalizedTopic.includes('down payment') ||
+    normalizedTopic.includes('low-down') ||
+    normalizedTopic.includes('zero-down') ||
+    normalizedTopic.includes('low down') ||
+    normalizedTopic.includes('zero down')
+  ) {
+    filename = 'firsttimeknowledge.md';
+  }
+
+  console.log(`=== API CHAT ROUTE KNOWLEDGE BASE SELECTED === Filename: ${filename} (detectedTopic: "${detectedTopic}", campaignName: "${campaignName}")`);
+
   const knowledgePath = path.join(process.cwd(), 'src', 'data', filename);
   let knowledgeBase = "";
   try {
@@ -162,8 +229,14 @@ export async function POST(req: Request) {
       ? `You are Mort, a friendly, professional AI mortgage assistant. You are the assistant to ${lenderName}.`
       : `You are Mort, a friendly, professional, and helpful AI mortgage assistant.`;
 
-    const campaignContext = (chatslug || topic)
-      ? `CONTEXT: The user has arrived on a customized campaign page about: "${chatslug || topic}". The welcome greeting they saw was: "Looks like you're looking to learn more about ${chatslug || topic}?". They expect to chat specifically about this topic (${chatslug || topic}). Do NOT ask generic qualifying questions such as "are you looking to buy your first home, refinance, or something else" unless it is directly related to their topic. Immediately address, advise, and focus the conversation on "${chatslug || topic}".`
+    const campaignContext = detectedTopic
+      ? `CONTEXT: The user has arrived on a customized campaign page about: "${detectedTopic}".
+- The welcome greeting they saw on the page was: "Hi I'm Mort, a well trained mortgage AI. Looks like you're looking to learn more about ${detectedTopic}?".
+- The user's first response (e.g. "yes", "sure", "ok", or details they typed) is directly replying to this welcome greeting.
+- You MUST acknowledge this topic ("${detectedTopic}") immediately in your response and keep the conversation focused on it.
+- Do NOT ask generic qualifying questions (like "Are you a first-time homebuyer, looking to refinance, or something else?") if the topic/chatslug already specifies what they want (e.g. if the topic/chatslug is about "Reverse Mortgages" or "First-Time Buyer Programs", you already know what they want!).
+- Instead, dive directly into discussing "${detectedTopic}" by providing helpful information, asking relevant follow-up questions specific to that topic, and helping them understand how it works.
+- For example, if they confirm they want to learn about a reverse mortgage for a property (e.g., "123 Main Street"), explain the benefits (like no monthly payments, FHA insurance protection) and check if they or their spouse is 62+ years old.`
       : "";
 
     systemPrompt = `
@@ -175,12 +248,20 @@ export async function POST(req: Request) {
 
       YOUR SPECIFIC CONVERSATION GOALS:
       1. Answer any mortgage-related questions the user asks clearly, concisely, and supportively. Keep the conversation going naturally, answering questions and educating the user first.
-      2. Since the user is inquiring about "${chatslug || topic || "mortgages"}", tailor all replies, recommendations, and explanations to center around this topic.
+      2. Since the user is inquiring about "${detectedTopic || "mortgages"}", tailor all replies, recommendations, and explanations to center around this topic.
       3. After the chat has naturally occurred a bit (e.g. after answering 1-2 questions and providing some educational value), your objective is to naturally let the person know that they can text the mortgage professional at their direct number: ${lenderPhone || "215-900-4065"} right now to talk directly with a real human.
       4. Tell them they can text that number for immediate assistance. Do NOT collect contact details, ask for their phone number, or present any forms. Just provide this phone number naturally in the flow of conversation.
       5. Do NOT refer to "our top lender", "your matched lender", or "matched lender" under any circumstances.
       6. If a representative name is provided (${lenderName || ""}), always refer to them directly by their name. Otherwise, refer to them as "a specialist" or "a mortgage specialist".
       7. Keep replies friendly, concise, and helpful.
+      8. You are a senior expert mortgage advisor. For advanced concepts, regulations, or specific details not explicitly spelled out in the loaded knowledge base (e.g. Non-QM guidelines, DTI thresholds, conforming loan limits, or ARM adjustment frequencies), you are fully authorized and expected to draw upon your extensive pre-trained knowledge of US residential mortgage guidelines and regulations to provide accurate, consultative, and compliant advice.
+
+      CRITICAL OVERRIDE FOR CONNECT CAMPAIGN:
+      - This is a direct chat session, NOT a questionnaire. There is NO pre-submitted lead profile or numbers.
+      - Ignore any rules in the knowledge base that mention "Acknowledge their Profile" or "Look at the user's hidden profile submission".
+      - Instead, in your very first response, you MUST acknowledge the landing page topic "${detectedTopic}" immediately and directly address the user's initial confirmation regarding this topic.
+      - Maintain context of the initial welcome greeting ("Hi I'm Mort... Looks like you're looking to learn more about ${detectedTopic}?") and the user's confirmation ("yes" or similar). 
+      - Start by saying something like: "Great! Let's talk about the ${detectedTopic}..." or "Awesome, I'm glad you want to learn more about ${detectedTopic}!" and then immediately provide helpful information or ask a specific question relevant to that topic.
     `;
   } else {
     systemPrompt = `
@@ -200,6 +281,7 @@ export async function POST(req: Request) {
       5. If the user explicitly AGREES to connect or get pre-approved, you MUST call the 'requestMeeting' tool immediately. Do NOT include the phone number in your text response.
       6. Never guarantee specific interest rates, but you can speak generally about trends.
       7. Do not provide legal or financial advice.
+      8. You are a senior expert mortgage advisor. For advanced concepts, regulations, or specific details not explicitly spelled out in the loaded knowledge base (e.g. Non-QM guidelines, DTI thresholds, conforming loan limits, or ARM adjustment frequencies), you are fully authorized and expected to draw upon your extensive pre-trained knowledge of US residential mortgage guidelines and regulations to provide accurate, consultative, and compliant advice.
     `;
   }
 

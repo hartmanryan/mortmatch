@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send } from "lucide-react";
 import Image from "next/image";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 export type StepData = {
   id: string;
@@ -36,9 +37,11 @@ const getMsgText = (msg: any): string => {
 };
 
 export default function ChatForm({ steps, campaignName, lenderName, lenderPhone, topic, chatslug }: ChatFormProps) {
-  const [formMessages, setFormMessages] = useState<FormMessage[]>([
-    { id: "1", sender: "mort", text: steps[0].question }
-  ]);
+  const [formMessages, setFormMessages] = useState<FormMessage[]>(() => 
+    campaignName === "connect" ? [] : [
+      { id: "1", sender: "mort", text: steps[0].question }
+    ]
+  );
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [contact, setContact] = useState({ name: "", phone: "", state: "", email: "", city: "", street: "" });
@@ -62,11 +65,60 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
 
   const refId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("ref") : null;
 
+  const activeLenderName = matchedLender?.name || lenderName;
+  const activeLenderPhone = matchedLender?.phone || lenderPhone;
+
+  useEffect(() => {
+    setIsAiChatMode(campaignName === "connect");
+  }, [campaignName]);
+
+  const chatBodyRef = useRef({
+    campaignName,
+    leadProfile: answers,
+    lenderName: activeLenderName,
+    lenderPhone: activeLenderPhone,
+    leadId,
+    refId,
+    topic,
+    chatslug
+  });
+
+  // Keep ref up to date with latest render state
+  chatBodyRef.current = {
+    campaignName,
+    leadProfile: answers,
+    lenderName: activeLenderName,
+    lenderPhone: activeLenderPhone,
+    leadId,
+    refId,
+    topic,
+    chatslug
+  };
+
+  console.log("=== ChatForm client-side render ===", {
+    campaignName,
+    topic,
+    chatslug,
+    lenderName,
+    lenderPhone,
+    activeLenderName,
+    activeLenderPhone,
+    leadId,
+    refId
+  });
+
+  const [transport] = useState(() => new DefaultChatTransport({
+    body: () => {
+      console.log("=== TRANSPORT body function invoked ===", chatBodyRef.current);
+      return chatBodyRef.current;
+    }
+  }));
+
   const { messages: aiMessages, sendMessage, status } = useChat({
-    // @ts-ignore: Vercel AI SDK version mismatch on type definitions
-    body: { campaignName, leadProfile: answers, lenderName: matchedLender?.name, lenderPhone: matchedLender?.phone, leadId, refId, topic, chatslug },
-    initialMessages: campaignName === "connect" ? [
-      { id: "init-connect", role: "assistant" as const, content: steps[0].question }
+    id: `chat-${campaignName || "default"}-${topic || "none"}-${chatslug || "none"}`,
+    transport,
+    messages: campaignName === "connect" ? [
+      { id: "init-connect", role: "assistant" as any, parts: [{ type: "text" as const, text: steps[0].question }] }
     ] : []
   });
 
@@ -77,7 +129,7 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
     if (campaignName === "connect") {
       const timer = setTimeout(() => {
         setShowTextCta(true);
-      }, 7000);
+      }, 12000);
       return () => clearTimeout(timer);
     }
   }, [campaignName]);
@@ -96,9 +148,9 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
 
   useEffect(() => {
     if (isAiChatMode && aiMessages.length === 0 && campaignName !== "connect") {
-      sendMessage({ role: "user", content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${matchedLender?.name || "a top lender"}. What are your initial thoughts, and what should I do next?` } as any);
+      sendMessage({ role: "user", content: `I just submitted my profile: ${JSON.stringify(answers)}. I am matched with ${activeLenderName || "a top lender"}. What are your initial thoughts, and what should I do next?` } as any);
     }
-  }, [isAiChatMode, aiMessages.length, sendMessage, answers, matchedLender, campaignName]);
+  }, [isAiChatMode, aiMessages.length, sendMessage, answers, activeLenderName, campaignName]);
 
   useEffect(() => {
     const toolMsg = aiMessages.find(
@@ -388,27 +440,27 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
             </motion.div>
           )}
 
-          {isAiChatMode && matchedLender && campaignName !== "connect" && (
+          {isAiChatMode && activeLenderPhone && activeLenderName && campaignName !== "connect" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col gap-3 mt-4 ml-11 items-start"
             >
               <a 
-                href={`sms:${matchedLender.phone}?&body=${encodeURIComponent(`Hi ${matchedLender.name}, Mortmatch just paired us! I'd love to quickly chat about my mortgage options.`)}`}
+                href={`sms:${activeLenderPhone}?&body=${encodeURIComponent(`Hi ${activeLenderName}, Mortmatch just paired us! I'd love to quickly chat about my mortgage options.`)}`}
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow-md font-medium flex items-center justify-center gap-2 transition-colors text-sm max-w-[200px]"
               >
-                Text {matchedLender.name} @ {matchedLender.phone}
+                Text {activeLenderName} @ {activeLenderPhone}
               </a>
               
               <button 
                 onClick={(e) => {
                   e.currentTarget.style.display = 'none';
-                  sendMessage({ role: "user", content: `No thanks, tell ${matchedLender.name} to email me instead.` } as any);
+                  sendMessage({ role: "user", content: `No thanks, tell ${activeLenderName} to email me instead.` } as any);
                 }}
                 className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm max-w-[200px]"
               >
-                Book a Meeting With {matchedLender.name}
+                Book a Meeting With {activeLenderName}
               </button>
             </motion.div>
           )}
@@ -528,7 +580,7 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
                 transition={{ duration: 0.5 }}
                 className="text-center text-sm sm:text-base text-orange-600 mt-6 font-bold bg-orange-50/40 py-2.5 px-4 rounded-xl border border-orange-100/60 shadow-sm"
               >
-                Optional - Send A Text Message To <a href={`sms:${matchedLender?.phone || "215-900-4065"}`} className="underline hover:text-orange-700">{matchedLender?.phone || "215-900-4065"}</a> To Talk With A Real Human Now
+                Optional - Send A Text Message To <a href={`sms:${activeLenderPhone || "215-900-4065"}`} className="underline hover:text-orange-700">{activeLenderPhone || "215-900-4065"}</a> {chatslug ? `to Talk with a real human about ${chatslug} now` : "To Talk With A Real Human Now"}
               </motion.div>
             )}
           </motion.div>

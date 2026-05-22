@@ -95,6 +95,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
 
         <div className="w-full">
           <ChatForm 
+            key={`chatform-connect-${topic || "none"}-${chatslug || "none"}-${lender?.clerkId || "default"}`}
             steps={connectSteps} 
             campaignName="connect" 
             lenderName={lender ? `${lender.firstName || ""} ${lender.lastName || ""}`.trim() : undefined} 
