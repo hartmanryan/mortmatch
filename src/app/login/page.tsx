@@ -18,24 +18,30 @@ export default function LoginPage() {
     setLoading(true);
     setErrorMsg('');
     
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { 
-        emailRedirectTo: `${window.location.origin}/auth/callback` 
-      },
-    });
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { 
+          emailRedirectTo: `${window.location.origin}/auth/callback` 
+        },
+      });
 
-    if (error) {
-      setErrorMsg(error.message);
-    } else {
-      setSent(true);
+      if (error) {
+        setErrorMsg(error.message);
+      } else {
+        setSent(true);
+      }
+    } catch (err: any) {
+      console.error("Magic link request failed:", err);
+      setErrorMsg(err?.message || "An unexpected error occurred. Please check your network and configuration.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
