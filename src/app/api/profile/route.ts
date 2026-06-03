@@ -24,16 +24,17 @@ export async function GET(request: Request) {
 
     // Fallback: search by email from active session and sync authUserId
     if (!lender && user?.email) {
+      const normalizedEmail = user.email.toLowerCase();
       lender = await prisma.lender.findUnique({
-        where: { email: user.email }
+        where: { email: normalizedEmail }
       });
 
       if (lender) {
         lender = await prisma.lender.update({
-          where: { email: user.email },
+          where: { email: normalizedEmail },
           data: { 
             authUserId: clerkId,
-            ...(user.email.toLowerCase() === 'propknocks@gmail.com' ? { isAdmin: true } : {})
+            ...(normalizedEmail === 'propknocks@gmail.com' ? { isAdmin: true } : {})
           }
         });
       }
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
 
     if (lender) {
       // Update existing record
+      const isSuperAdminEmail = email.toLowerCase() === 'propknocks@gmail.com';
       lender = await prisma.lender.update({
         where: { email },
         data: {
@@ -75,10 +77,12 @@ export async function POST(request: Request) {
           companyName,
           nmls,
           phone,
+          ...(isSuperAdminEmail ? { isAdmin: true } : {})
         }
       });
     } else {
       // Create new record
+      const isSuperAdminEmail = email.toLowerCase() === 'propknocks@gmail.com';
       lender = await prisma.lender.create({
         data: {
           authUserId: clerkId,
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
           companyName,
           nmls,
           phone,
+          isAdmin: isSuperAdminEmail
         }
       });
     }

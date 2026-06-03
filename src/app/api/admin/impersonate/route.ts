@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   } else {
     // Ensure they are actually an admin in the database
     const currentLender = await prisma.lender.findUnique({
-      where: { email: user.email! }
+      where: { email: user.email!.toLowerCase() }
     });
 
     if (!currentLender?.isAdmin) {

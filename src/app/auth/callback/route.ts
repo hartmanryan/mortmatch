@@ -15,21 +15,21 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
-    if (!error) {
-      // Sync authUserId and admin state with the database Lender record
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) {
+    if (!error && data?.user) {
+      const user = data.user;
+      if (user.email) {
         try {
-          const isSuperAdminEmail = user.email.toLowerCase() === 'propknocks@gmail.com';
+          const normalizedEmail = user.email.toLowerCase();
+          const isSuperAdminEmail = normalizedEmail === 'propknocks@gmail.com';
           const lender = await prisma.lender.findUnique({
-            where: { email: user.email }
+            where: { email: normalizedEmail }
           });
 
           if (lender) {
             await prisma.lender.update({
-              where: { email: user.email },
+              where: { email: normalizedEmail },
               data: {
                 authUserId: user.id,
                 ...(isSuperAdminEmail ? { isAdmin: true } : {})
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
             await prisma.lender.create({
               data: {
                 authUserId: user.id,
-                email: user.email,
+                email: normalizedEmail,
                 firstName: user.email.split('@')[0],
                 lastName: 'Lender',
                 isAdmin: isSuperAdminEmail,

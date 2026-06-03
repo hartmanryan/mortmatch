@@ -7,13 +7,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Footer from "@/components/Footer";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
@@ -68,16 +68,16 @@ export default function LoginPage() {
                 <Link href="/reverse" className="px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600">Reverse Mortgage</Link>
               </div>
             </div>
-            <Link href="/signup" className="hover:text-blue-600 transition-colors">Create Account</Link>
+            <Link href="/login" className="hover:text-blue-600 transition-colors">Sign In</Link>
           </nav>
         </div>
       </header>
 
       {/* Main Container */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12 md:py-16">
-        <div className="text-center mb-8 max-w-2xl flex flex-col items-center">
+        <div className="text-center mb-8 max-w-2xl flex flex-col items-center animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-4 leading-tight">
-            Sign In to Lender Portal
+            Create Your Lender Account
           </h1>
         </div>
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
               <h2 className="font-bold text-lg leading-tight">Mort</h2>
               <p className="text-blue-200 text-xs flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-400 inline-block animate-pulse"></span>
-                Online • Lender Sign-In Portal
+                Online • Lender Onboarding
               </p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
                   <Image src="/mort_face.png" alt="Mort" fill className="object-cover" />
                 </div>
                 <div className="px-4 py-3 rounded-2xl shadow-sm text-[15px] bg-white text-slate-700 border border-slate-100 rounded-bl-none">
-                  Hi there! Welcome to the MortMatch Lender Portal. 👋
+                  Hi there! Welcome to MortMatch. Let's get your lender account set up! 👋
                 </div>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function LoginPage() {
                   <Image src="/mort_face.png" alt="Mort" fill className="object-cover" />
                 </div>
                 <div className="px-4 py-3 rounded-2xl shadow-sm text-[15px] bg-white text-slate-700 border border-slate-100 rounded-bl-none">
-                  Please enter your email address below to receive a secure magic sign-in link:
+                  Please enter your email address below to create your account and receive your secure magic access link:
                 </div>
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function LoginPage() {
                         Check your email!
                       </p>
                       <p className="text-slate-600 text-sm leading-relaxed">
-                        We sent a magic sign-in link to <span className="font-semibold text-slate-900">{email}</span>. Click the link in your inbox to complete signing in.
+                        We sent a magic sign-up link to <span className="font-semibold text-slate-900">{email}</span>. Click the link in your inbox to complete setting up your account.
                       </p>
                       <button 
                         onClick={() => setSent(false)}
@@ -163,7 +163,7 @@ export default function LoginPage() {
           {/* Form Area */}
           {!sent && (
             <div className="p-4 border-t border-slate-100 bg-white">
-              <form onSubmit={handleLogin} className="space-y-4 max-w-md mx-auto">
+              <form onSubmit={handleSignup} className="space-y-4 max-w-md mx-auto">
                 <div className="space-y-1.5">
                   <label htmlFor="email" className="block text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">
                     Email Address
@@ -189,7 +189,7 @@ export default function LoginPage() {
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
-                      Send Magic Link
+                      Create Free Account
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

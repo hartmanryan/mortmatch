@@ -18,12 +18,18 @@ export default async function DashboardLayout({
   let isAdmin = false;
 
   // 1. Resolve real user from Supabase Auth
+  console.log("[DashboardLayout] Incoming cookies:", cookieStore.getAll().map(c => c.name));
+
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError) {
+    console.error("[DashboardLayout] getUser error:", authError);
+  }
 
   let realLender = null;
   if (user?.email) {
-    console.log("[DashboardLayout] Auth User Email:", user.email);
+    console.log("[DashboardLayout] Auth User Email:", user.email, "User ID:", user.id);
     try {
       realLender = await prisma.lender.findUnique({
         where: { email: user.email.toLowerCase() }

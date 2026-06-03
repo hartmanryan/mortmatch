@@ -15,7 +15,7 @@ export default async function AdminDashboard() {
   }
 
   const currentUserLender = await prisma.lender.findUnique({
-    where: { email: user.email! }
+    where: { email: user.email!.toLowerCase() }
   });
 
   if (!currentUserLender || !currentUserLender.isAdmin) {
