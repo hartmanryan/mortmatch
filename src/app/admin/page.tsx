@@ -43,6 +43,52 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
+        {/* Add Lender Form */}
+        <div className="bg-white shadow-sm border border-slate-200 rounded-3xl p-6">
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Manually Pre-Add Lender</h2>
+          <form action={async (formData: FormData) => {
+            'use server';
+            const email = formData.get('email') as string;
+            const firstName = formData.get('firstName') as string;
+            const lastName = formData.get('lastName') as string;
+            if (!email) return;
+
+            const { PrismaClient } = await import('@prisma/client');
+            const prisma = new PrismaClient();
+
+            await prisma.lender.upsert({
+              where: { email: email.toLowerCase().trim() },
+              update: {},
+              create: {
+                email: email.toLowerCase().trim(),
+                firstName: firstName.trim() || email.split('@')[0],
+                lastName: lastName.trim() || 'Lender',
+                isActive: true,
+                isAdmin: false,
+              }
+            });
+
+            const { revalidatePath } = await import('next/cache');
+            revalidatePath('/admin');
+          }} className="flex flex-wrap gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Email</label>
+              <input type="email" name="email" required className="border border-slate-200 rounded-lg px-3 py-2 text-sm w-64 text-slate-900" placeholder="lender@example.com" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">First Name (Optional)</label>
+              <input type="text" name="firstName" className="border border-slate-200 rounded-lg px-3 py-2 text-sm w-40 text-slate-900" placeholder="First" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Last Name (Optional)</label>
+              <input type="text" name="lastName" className="border border-slate-200 rounded-lg px-3 py-2 text-sm w-40 text-slate-900" placeholder="Last" />
+            </div>
+            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg text-sm transition-colors h-[38px]">
+              + Add to Directory
+            </button>
+          </form>
+        </div>
+
         {/* Directory Table */}
         <div className="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden">
           <div className="overflow-x-auto">
