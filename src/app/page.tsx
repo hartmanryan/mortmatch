@@ -2,9 +2,16 @@ import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 import Footer from "@/components/Footer";
+import { redirect } from "next/navigation";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string, chatslug?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string, chatslug?: string, code?: string, next?: string }> }) {
   const params = await searchParams;
+  const code = params.code;
+
+  if (code) {
+    redirect(`/auth/callback?code=${code}${params.next ? `&next=${params.next}` : ''}`);
+  }
+
   const ref = params.ref;
   const headline = params.h;
   const topic = params.topic;
