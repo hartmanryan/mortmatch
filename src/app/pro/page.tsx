@@ -24,7 +24,7 @@ export default function ProPage() {
                 <Link href="/reverse" className="px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600">Reverse Mortgage</Link>
               </div>
             </div>
-            <Link href="/sign-in" className="hover:text-blue-600 transition-colors">Sign In</Link>
+            <Link href="/login" className="hover:text-blue-600 transition-colors">Sign In</Link>
           </nav>
         </div>
       </header>
@@ -37,8 +37,8 @@ export default function ProPage() {
           <p className="text-lg md:text-xl text-slate-600 mb-10">
             Join MortMatch to generate high-intent leads and manage them effortlessly with our AI-powered chat and CRM.
           </p>
-          <Link href="/sign-up" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full text-lg transition-transform hover:scale-105 shadow-lg">
-            Create Free Account
+          <Link href="/login" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full text-lg transition-transform hover:scale-105 shadow-lg">
+            Get Started
           </Link>
         </div>
         
