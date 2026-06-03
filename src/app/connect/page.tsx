@@ -14,8 +14,13 @@ export default async function ConnectPage({ searchParams }: { searchParams: Prom
   let lender = null;
   if (ref) {
     try {
-      lender = await prisma.lender.findUnique({
-        where: { clerkId: ref }
+      lender = await prisma.lender.findFirst({
+        where: {
+          OR: [
+            { authUserId: ref },
+            { id: ref }
+          ]
+        }
       });
     } catch (e) {
       console.error("Error fetching lender compliance:", e);
@@ -99,7 +104,7 @@ export default async function ConnectPage({ searchParams }: { searchParams: Prom
 
         <div className="w-full">
           <ChatForm 
-            key={`chatform-connect-${topic || "none"}-${chatslug || "none"}-${lender?.clerkId || "default"}`}
+            key={`chatform-connect-${topic || "none"}-${chatslug || "none"}-${lender?.authUserId || "default"}`}
             steps={connectSteps} 
             campaignName="connect" 
             lenderName={lender ? `${lender.firstName || ""} ${lender.lastName || ""}`.trim() : undefined} 

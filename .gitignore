@@ -43,3 +43,10 @@ next-env.d.ts
 /src/generated/prisma
 
 .vercel
+
+# scratch files
+/scratch/
+/scratch.ts
+/dev.log
+/test-chat.js
+/crop_image.js

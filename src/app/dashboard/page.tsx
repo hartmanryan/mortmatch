@@ -1,14 +1,55 @@
+import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
+import { createClient } from "@/utils/supabase/server";
 import LeadsTable from "@/components/LeadsTable";
 
 export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const impersonatedLenderId = cookieStore.get("impersonate_lender_id")?.value;
+
+  let lender = null;
+
+  // 1. Resolve real user from Supabase Auth
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // 2. Load lender details based on session/impersonation
+  if (impersonatedLenderId) {
+    try {
+      lender = await prisma.lender.findUnique({
+        where: { id: impersonatedLenderId }
+      });
+    } catch (e) {
+      console.error("Error fetching impersonated lender", e);
+    }
+  } else if (user?.email) {
+    try {
+      lender = await prisma.lender.findUnique({
+        where: { email: user.email }
+      });
+    } catch (e) {
+      console.error("Error fetching logged-in lender", e);
+    }
+  }
+
   let leads: any[] = [];
-  try {
-    leads = await prisma.lead.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-  } catch (e) {
-    console.error("Database not connected yet", e);
+  if (lender) {
+    try {
+      const isDefaultAdmin = lender.email === 'propknocks@gmail.com';
+      leads = await prisma.lead.findMany({
+        where: isDefaultAdmin
+          ? {
+              OR: [
+                { lenderId: lender.id },
+                { lenderId: null }
+              ]
+            }
+          : { lenderId: lender.id },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (e) {
+      console.error("Error fetching leads from database", e);
+    }
   }
 
   // Convert Date objects to ISO strings to make it serializable for client component props

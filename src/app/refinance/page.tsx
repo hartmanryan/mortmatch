@@ -43,8 +43,13 @@ export default async function RefinancePage({ searchParams }: { searchParams: Pr
   let lender = null;
   if (ref) {
     try {
-      lender = await prisma.lender.findUnique({
-        where: { clerkId: ref }
+      lender = await prisma.lender.findFirst({
+        where: {
+          OR: [
+            { authUserId: ref },
+            { id: ref }
+          ]
+        }
       });
     } catch (e) {
       console.error("Error fetching lender compliance:", e);

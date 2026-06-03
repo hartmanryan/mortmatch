@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { Save } from "lucide-react";
 
 export default function ProfilePage() {
-  const { user } = useUser();
+  const [user, setUser] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState({
     firstName: "",
@@ -15,6 +15,14 @@ export default function ProfilePage() {
     phone: ""
   });
   const [message, setMessage] = useState("");
+  
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   useEffect(() => {
     if (user?.id) {
@@ -24,19 +32,12 @@ export default function ProfilePage() {
         .then(data => {
           if (data.lender) {
             setProfile({
-              firstName: data.lender.firstName || user.firstName || "",
-              lastName: data.lender.lastName || user.lastName || "",
+              firstName: data.lender.firstName || "",
+              lastName: data.lender.lastName || "",
               companyName: data.lender.companyName || "",
               nmls: data.lender.nmls || "",
               phone: data.lender.phone || ""
             });
-          } else {
-            // Default to clerk info if no db record yet
-            setProfile(prev => ({
-              ...prev,
-              firstName: user.firstName || "",
-              lastName: user.lastName || ""
-            }));
           }
         });
     }
@@ -54,7 +55,7 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clerkId: user.id,
-          email: user.primaryEmailAddress?.emailAddress,
+          email: user.email,
           ...profile
         })
       });

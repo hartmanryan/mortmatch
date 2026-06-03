@@ -35,11 +35,15 @@ model Lead {
   status         String   @default("NEW") // NEW, CONTACTED, SOLD
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  // Relationship to Lender
+  lenderId       String?
+  lender         Lender?  @relation(fields: [lenderId], references: [id], onDelete: SetNull)
 }
 
 model Lender {
   id             String   @id @default(uuid())
-  clerkId        String?  @unique
+  authUserId     String?  @unique
   firstName      String?
   lastName       String?
   companyName    String?
@@ -48,6 +52,8 @@ model Lender {
   email          String   @unique
   stripeId       String?
   isActive       Boolean  @default(true)
+  isAdmin        Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  leads          Lead[]
 }

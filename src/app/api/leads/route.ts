@@ -29,7 +29,14 @@ export async function POST(request: Request) {
     // Find the associated lender (if refId exists)
     let lender = null;
     if (refId) {
-      lender = await prisma.lender.findUnique({ where: { clerkId: refId } });
+      lender = await prisma.lender.findFirst({
+        where: {
+          OR: [
+            { authUserId: refId },
+            { id: refId }
+          ]
+        }
+      });
     }
     
     // Default to organic admin user if no ref provided or lender not found
@@ -59,6 +66,7 @@ export async function POST(request: Request) {
           location,
           rawAnswers: answers, // Save the complete dynamic answers object
           status: 'NEW',
+          lenderId: lender?.id || null,
         },
       });
       console.log("Lead created successfully:", lead.id);

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy, Check, ExternalLink, Video, Link2, HelpCircle, Sparkles, Sliders, ChevronDown, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { createClient } from "@/utils/supabase/client";
 
 const SCENARIOS = [
   {
@@ -31,7 +31,15 @@ const SCENARIOS = [
 
 export default function CampaignLinksPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { user } = useUser();
+  const [user, setUser] = useState<any>(null);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   // Integration builder state
   const [selectedTemplate, setSelectedTemplate] = useState(SCENARIOS[0].id);

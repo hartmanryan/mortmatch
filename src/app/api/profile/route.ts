@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const clerkId = searchParams.get('clerkId');
+  let clerkId = searchParams.get('clerkId');
+
+  if (!clerkId) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    clerkId = user?.id || null;
+  }
 
   if (!clerkId) {
     return NextResponse.json({ error: "Missing clerkId" }, { status: 400 });
@@ -11,7 +18,7 @@ export async function GET(request: Request) {
 
   try {
     const lender = await prisma.lender.findUnique({
-      where: { clerkId }
+      where: { authUserId: clerkId }
     });
     return NextResponse.json({ lender });
   } catch (error) {
@@ -22,13 +29,20 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { clerkId, email, firstName, lastName, companyName, nmls, phone } = body;
+    let { clerkId, email, firstName, lastName, companyName, nmls, phone } = body;
 
-    if (!clerkId || !email) {
-      return NextResponse.json({ error: "Missing clerkId or email" }, { status: 400 });
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if lender exists by email first (in case it was manually created before Clerk login)
+    // Enforce auth values from server session
+    clerkId = user.id;
+    email = user.email!;
+
+    // Check if lender exists by email first (in case it was manually created before login)
     let lender = await prisma.lender.findUnique({ where: { email } });
 
     if (lender) {
@@ -36,7 +50,7 @@ export async function POST(request: Request) {
       lender = await prisma.lender.update({
         where: { email },
         data: {
-          clerkId, // Update clerkId in case it was null
+          authUserId: clerkId, // Update authUserId in case it was null
           firstName,
           lastName,
           companyName,
@@ -48,7 +62,7 @@ export async function POST(request: Request) {
       // Create new record
       lender = await prisma.lender.create({
         data: {
-          clerkId,
+          authUserId: clerkId,
           email,
           firstName,
           lastName,
