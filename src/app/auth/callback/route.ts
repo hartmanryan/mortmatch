@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import prisma from '@/lib/prisma';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -17,6 +18,41 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
+      // Sync authUserId and admin state with the database Lender record
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        try {
+          const isSuperAdminEmail = user.email.toLowerCase() === 'propknocks@gmail.com';
+          const lender = await prisma.lender.findUnique({
+            where: { email: user.email }
+          });
+
+          if (lender) {
+            await prisma.lender.update({
+              where: { email: user.email },
+              data: {
+                authUserId: user.id,
+                ...(isSuperAdminEmail ? { isAdmin: true } : {})
+              }
+            });
+          } else {
+            // Auto-create record if they don't exist
+            await prisma.lender.create({
+              data: {
+                authUserId: user.id,
+                email: user.email,
+                firstName: user.email.split('@')[0],
+                lastName: 'Lender',
+                isAdmin: isSuperAdminEmail,
+                isActive: true
+              }
+            });
+          }
+        } catch (dbError) {
+          console.error("Database sync error during callback:", dbError);
+        }
+      }
+
       return NextResponse.redirect(`${publicOrigin}${next}`);
     } else {
       console.error("Supabase code exchange error:", error);
