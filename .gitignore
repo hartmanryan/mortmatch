@@ -50,3 +50,5 @@ next-env.d.ts
 /dev.log
 /test-chat.js
 /crop_image.js
+
+.env*

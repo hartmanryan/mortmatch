@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Mail, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import Footer from "@/components/Footer";
@@ -19,10 +19,7 @@ export default function LoginPage() {
     setErrorMsg('');
     
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+      const supabase = createClient();
       
       const { error } = await supabase.auth.signInWithOtp({
         email,
