@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   } else if (user?.email) {
     try {
       lender = await prisma.lender.findUnique({
-        where: { email: user.email }
+        where: { email: user.email.toLowerCase() }
       });
     } catch (e) {
       console.error("Error fetching logged-in lender", e);

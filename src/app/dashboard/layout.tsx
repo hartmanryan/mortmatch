@@ -23,14 +23,18 @@ export default async function DashboardLayout({
 
   let realLender = null;
   if (user?.email) {
+    console.log("[DashboardLayout] Auth User Email:", user.email);
     try {
       realLender = await prisma.lender.findUnique({
-        where: { email: user.email }
+        where: { email: user.email.toLowerCase() }
       });
+      console.log("[DashboardLayout] Resolved database lender:", realLender);
       isAdmin = realLender?.isAdmin || false;
     } catch (e) {
-      console.error("Database connection error fetching real user", e);
+      console.error("[DashboardLayout] Database error fetching real user", e);
     }
+  } else {
+    console.log("[DashboardLayout] No user session email found. User object:", user);
   }
 
   // 2. Load lender details based on impersonation or standard session

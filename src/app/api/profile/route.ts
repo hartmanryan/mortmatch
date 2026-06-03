@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     // Enforce auth values from server session
     clerkId = user.id;
-    email = user.email!;
+    email = user.email!.toLowerCase();
 
     // Check if lender exists by email first (in case it was manually created before login)
     let lender = await prisma.lender.findUnique({ where: { email } });
