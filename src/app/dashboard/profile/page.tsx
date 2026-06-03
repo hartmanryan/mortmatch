@@ -12,6 +12,12 @@ export default async function ProfilePage() {
       lender = await prisma.lender.findUnique({
         where: { email: user.email.toLowerCase() }
       });
+      
+      if (!lender && user.id) {
+        lender = await prisma.lender.findUnique({
+          where: { authUserId: user.id }
+        });
+      }
     } catch (e) {
       console.error("Error loading profile on server:", e);
     }

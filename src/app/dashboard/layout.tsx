@@ -34,6 +34,13 @@ export default async function DashboardLayout({
       realLender = await prisma.lender.findUnique({
         where: { email: user.email.toLowerCase() }
       });
+      
+      if (!realLender && user.id) {
+        realLender = await prisma.lender.findUnique({
+          where: { authUserId: user.id }
+        });
+      }
+      
       console.log("[DashboardLayout] Resolved database lender:", realLender);
       isAdmin = realLender?.isAdmin || false;
     } catch (e) {
