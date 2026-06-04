@@ -99,6 +99,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
     }
   }
 
+  const refQuery = ref ? `?ref=${ref}` : '';
+
   const firstQuestion = (chatslug || topic)
     ? `Hi I'm Mort, a well trained mortgage AI. Looks like you're looking to learn more about ${chatslug || topic}?`
     : `Hi I'm Mort, a well trained mortgage AI. How can we help today?`;
@@ -132,7 +134,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="relative w-[280px] h-14">
-              <Image src="/mortlogo.png" alt="MortMatch" fill className="object-contain object-left" />
+              <a href={`/${refQuery}`}>
+                <Image src="/mortlogo.png" alt="MortMatch" fill className="object-contain object-left" />
+              </a>
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -143,10 +147,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <div className="absolute top-full right-0 mt-0 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden flex flex-col z-50">
-                <a href="/first" className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">First Time Buyer</a>
-                <a href="/refinance" className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Refinance</a>
-                <a href="/self-employed" className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Self Employed</a>
-                <a href="/reverse" className="px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600">Reverse Mortgage</a>
+                <a href={`/first${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">First Time Buyer</a>
+                <a href={`/refinance${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Refinance</a>
+                <a href={`/self-employed${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Self Employed</a>
+                <a href={`/reverse${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600">Reverse Mortgage</a>
               </div>
             </div>
           </nav>
