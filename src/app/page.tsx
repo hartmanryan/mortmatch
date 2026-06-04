@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import Footer from "@/components/Footer";
 import { redirect } from "next/navigation";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string, chatslug?: string, code?: string, next?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ ref?: string, h?: string, topic?: string, chatslug?: string, code?: string, next?: string, name?: string, email?: string, phone?: string, street?: string, city?: string, state?: string }> }) {
   const params = await searchParams;
   const code = params.code;
 
@@ -16,6 +16,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
   const headline = params.h;
   const topic = params.topic;
   const chatslug = params.chatslug;
+  const name = params.name;
+  const email = params.email;
+  const phone = params.phone;
+  const street = params.street;
+  const city = params.city;
+  const state = params.state;
 
   let lender = null;
   if (ref) {
@@ -41,6 +47,55 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ r
       });
     } catch (e) {
       console.error("Error fetching default lender compliance:", e);
+    }
+  }
+
+  // Auto-create lead if contact parameters are provided and it doesn't already exist
+  if (email || phone) {
+    try {
+      let existingLead = null;
+      if (email) {
+        existingLead = await prisma.lead.findFirst({
+          where: {
+            email: email.trim().toLowerCase()
+          }
+        });
+      } else if (phone) {
+        existingLead = await prisma.lead.findFirst({
+          where: {
+            phone: phone.trim()
+          }
+        });
+      }
+
+      if (!existingLead) {
+        const nameParts = (name || 'Unknown').trim().split(/\s+/);
+        const firstName = nameParts[0] || 'Unknown';
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+        await prisma.lead.create({
+          data: {
+            firstName,
+            lastName,
+            email: email ? email.trim().toLowerCase() : `unknown_${Date.now()}@noemail.com`,
+            phone: phone ? phone.trim() : 'Unknown',
+            street: street || null,
+            city: city || null,
+            state: state || null,
+            situation: topic || chatslug || "Unknown",
+            priceRange: "Unknown",
+            employment: "Unknown",
+            downPayment: "Unknown",
+            creditScore: "Unknown",
+            campaign: "url-parameter",
+            lenderId: lender?.id || null,
+            status: 'NEW'
+          }
+        });
+        console.log("Auto-created lead from URL parameters for email/phone:", email || phone);
+      }
+    } catch (err) {
+      console.error("Failed to auto-create lead from URL params:", err);
     }
   }
 
