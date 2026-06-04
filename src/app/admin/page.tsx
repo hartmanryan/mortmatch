@@ -48,28 +48,30 @@ export default async function AdminDashboard() {
           <h2 className="text-lg font-bold text-slate-800 mb-4">Manually Pre-Add Lender</h2>
           <form action={async (formData: FormData) => {
             'use server';
-            const email = formData.get('email') as string;
-            const firstName = formData.get('firstName') as string;
-            const lastName = formData.get('lastName') as string;
-            if (!email) return;
+            try {
+              const email = formData.get('email')?.toString();
+              if (!email) return;
 
-            const { PrismaClient } = await import('@prisma/client');
-            const prisma = new PrismaClient();
+              const firstName = (formData.get('firstName')?.toString() || '').trim() || email.split('@')[0];
+              const lastName = (formData.get('lastName')?.toString() || '').trim() || 'Lender';
 
-            await prisma.lender.upsert({
-              where: { email: email.toLowerCase().trim() },
-              update: {},
-              create: {
-                email: email.toLowerCase().trim(),
-                firstName: firstName.trim() || email.split('@')[0],
-                lastName: lastName.trim() || 'Lender',
-                isActive: true,
-                isAdmin: false,
-              }
-            });
+              await prisma.lender.upsert({
+                where: { email: email.toLowerCase().trim() },
+                update: {},
+                create: {
+                  email: email.toLowerCase().trim(),
+                  firstName,
+                  lastName,
+                  isActive: true,
+                  isAdmin: false,
+                }
+              });
 
-            const { revalidatePath } = await import('next/cache');
-            revalidatePath('/admin');
+              const { revalidatePath } = await import('next/cache');
+              revalidatePath('/admin');
+            } catch (error) {
+              console.error("Failed to add lender:", error);
+            }
           }} className="flex flex-wrap gap-4 items-end">
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">Email</label>
