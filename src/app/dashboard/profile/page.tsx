@@ -1,22 +1,35 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import ProfileForm from "./ProfileForm";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  const cookieStore = await cookies();
+  const impersonatedLenderId = cookieStore.get("impersonate_lender_id")?.value;
+
   let lender = null;
   if (user?.email) {
     try {
-      lender = await prisma.lender.findUnique({
+      const currentLender = await prisma.lender.findUnique({
         where: { email: user.email.toLowerCase() }
       });
-      
-      if (!lender && user.id) {
+
+      if (impersonatedLenderId && currentLender?.isAdmin) {
         lender = await prisma.lender.findUnique({
-          where: { authUserId: user.id }
+          where: { id: impersonatedLenderId }
         });
+      }
+
+      if (!lender) {
+        lender = currentLender;
+        if (!lender && user.id) {
+          lender = await prisma.lender.findUnique({
+            where: { authUserId: user.id }
+          });
+        }
       }
     } catch (e) {
       console.error("Error loading profile on server:", e);

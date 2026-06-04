@@ -58,20 +58,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Enforce auth values from server session
+    // Enforce auth values from server session by default
     clerkId = user.id;
     email = user.email!.toLowerCase();
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const impersonatedLenderId = cookieStore.get("impersonate_lender_id")?.value;
+
+    let targetEmail = email;
+    let targetClerkId = clerkId;
+
+    if (impersonatedLenderId) {
+      const currentLender = await prisma.lender.findUnique({ where: { email } });
+      if (currentLender?.isAdmin) {
+        const impersonatedLender = await prisma.lender.findUnique({ where: { id: impersonatedLenderId } });
+        if (impersonatedLender) {
+          targetEmail = impersonatedLender.email;
+          targetClerkId = impersonatedLender.authUserId || '';
+        }
+      }
+    }
+
     // Check if lender exists by email first (in case it was manually created before login)
-    let lender = await prisma.lender.findUnique({ where: { email } });
+    let lender = await prisma.lender.findUnique({ where: { email: targetEmail } });
 
     if (lender) {
       // Update existing record
-      const isSuperAdminEmail = email.toLowerCase() === 'propknocks@gmail.com';
+      const isSuperAdminEmail = targetEmail.toLowerCase() === 'propknocks@gmail.com';
       lender = await prisma.lender.update({
-        where: { email },
+        where: { email: targetEmail },
         data: {
-          authUserId: clerkId, // Update authUserId in case it was null
+          authUserId: targetClerkId || null, // Update authUserId in case it was null
           firstName,
           lastName,
           companyName,
@@ -82,11 +100,11 @@ export async function POST(request: Request) {
       });
     } else {
       // Create new record
-      const isSuperAdminEmail = email.toLowerCase() === 'propknocks@gmail.com';
+      const isSuperAdminEmail = targetEmail.toLowerCase() === 'propknocks@gmail.com';
       lender = await prisma.lender.create({
         data: {
-          authUserId: clerkId,
-          email,
+          authUserId: targetClerkId || null,
+          email: targetEmail,
           firstName,
           lastName,
           companyName,
