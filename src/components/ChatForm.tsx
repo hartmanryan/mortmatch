@@ -21,6 +21,8 @@ type ChatFormProps = {
   lenderPhone?: string;
   topic?: string;
   chatslug?: string;
+  initialAnswers?: Record<string, string>;
+  initialStreet?: string;
 };
 
 type FormMessage = {
@@ -36,15 +38,16 @@ const getMsgText = (msg: any): string => {
   return '';
 };
 
-export default function ChatForm({ steps, campaignName, lenderName, lenderPhone, topic, chatslug }: ChatFormProps) {
+export default function ChatForm({ steps, campaignName, lenderName, lenderPhone, topic, chatslug, initialAnswers, initialStreet }: ChatFormProps) {
   const [formMessages, setFormMessages] = useState<FormMessage[]>(() => 
     campaignName === "connect" ? [] : [
       { id: "1", sender: "mort", text: steps[0].question }
     ]
   );
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [contact, setContact] = useState({ name: "", phone: "", state: "", email: "", city: "", street: "" });
+  const [answers, setAnswers] = useState<Record<string, string>>(() => initialAnswers || {});
+  const [contact, setContact] = useState({ name: "", phone: "", state: "", email: "", city: "", street: initialStreet || "" });
+
   const US_STATES = [
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
     "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",

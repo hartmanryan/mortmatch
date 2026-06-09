@@ -1,44 +1,17 @@
-import ChatForm, { StepData } from "@/components/ChatForm";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 import Footer from "@/components/Footer";
+import AvmCalculator from "./AvmCalculator";
 
-const REFINANCE_STEPS: StepData[] = [
-  {
-    id: "goal",
-    question: "Hi there! I'm Mort. 👋 I can help you explore your refinance options. First, what is your primary goal for refinancing?",
-    options: ["Lower My Rate", "Cash Out", "Pay Off Debt", "Shorten Loan Term"],
-  },
-  {
-    id: "timeline",
-    question: "Got it! How soon would you like to complete this refinance?",
-    options: ["ASAP", "1-3 months", "Just exploring right now"],
-  },
-  {
-    id: "currentBalance",
-    question: "What is your estimated current mortgage balance?",
-    options: ["Under $100k", "$100k - $250k", "$250k - $500k", "$500k+"],
-  },
-  {
-    id: "homeValue",
-    question: "And what is your home currently worth (estimated)?",
-    options: ["Under $200k", "$200k - $400k", "$400k - $700k", "$700k+"],
-  },
-  {
-    id: "creditScore",
-    question: "Do you happen to know your credit score?",
-    options: ["Under 600", "600 - 700", "700+", "I don't know it"],
-  },
-  {
-    id: "contact",
-    question: "Great, I'm starting to do some research in the background, Let me know what state you might need mortgage financing in and some other contact details and I'll be able to point you in a really good direction right after...",
-    isInput: true,
-  }
-];
-
-export default async function RefinancePage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
+export default async function PropertyValuePage({ searchParams }: { searchParams: Promise<{ ref?: string, street?: string, street2?: string, city?: string, state?: string, zip?: string, estmortgage?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
+  const street = params.street;
+  const street2 = params.street2;
+  const city = params.city;
+  const state = params.state;
+  const zip = params.zip;
+  const estmortgage = params.estmortgage;
 
   let lender = null;
   if (ref) {
@@ -71,9 +44,10 @@ export default async function RefinancePage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/30 flex flex-col">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-orange-100 blur-[120px]" />
+      {/* Dynamic Background Blurs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/70 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-orange-100/70 blur-[120px]" />
       </div>
 
       {/* Navigation Header */}
@@ -105,27 +79,17 @@ export default async function RefinancePage({ searchParams }: { searchParams: Pr
         </div>
       </header>
 
-      <main className="relative container mx-auto px-4 py-12 md:py-16 flex flex-col items-center flex-1">
-        
-        <div className="text-center mb-8 max-w-2xl flex flex-col items-center">
-          
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-4 leading-tight">
-            Chat With Mort To Find Your Perfect <span className="text-orange-500">Refinance</span> Option
-          </h1>
-        </div>
-
-        <div className="w-full">
-          <ChatForm 
-            steps={REFINANCE_STEPS} 
-            campaignName="refinance" 
-            lenderName={lender ? `${lender.firstName || ""} ${lender.lastName || ""}`.trim() : undefined} 
-            lenderPhone={lender?.phone || undefined} 
-          />
-        </div>
-        
-        <div className="mt-12 text-center text-slate-400 text-sm font-medium">
-          <p>Bank-level security • 256-bit encryption • Fast & Secure</p>
-        </div>
+      <main className="relative container mx-auto px-4 py-8 md:py-12 flex flex-col items-center flex-1 z-10 w-full max-w-5xl">
+        <AvmCalculator
+          lender={lender}
+          refQuery={refQuery}
+          initialStreet={street}
+          initialStreet2={street2}
+          initialCity={city}
+          initialState={state}
+          initialZip={zip}
+          initialEstMortgage={estmortgage}
+        />
       </main>
 
       <Footer lender={lender} />
