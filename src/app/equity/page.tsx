@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import Footer from "@/components/Footer";
 import AvmCalculator from "./AvmCalculator";
 
-export default async function PropertyValuePage({ searchParams }: { searchParams: Promise<{ ref?: string, street?: string, street2?: string, city?: string, state?: string, zip?: string, estmortgage?: string }> }) {
+export default async function PropertyValuePage({ searchParams }: { searchParams: Promise<{ ref?: string, street?: string, street2?: string, city?: string, state?: string, zip?: string, estmortgage?: string, name?: string, email?: string, phone?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
   const street = params.street;
@@ -12,6 +12,9 @@ export default async function PropertyValuePage({ searchParams }: { searchParams
   const state = params.state;
   const zip = params.zip;
   const estmortgage = params.estmortgage;
+  const name = params.name;
+  const email = params.email;
+  const phone = params.phone;
 
   let lender = null;
   if (ref) {
@@ -37,6 +40,55 @@ export default async function PropertyValuePage({ searchParams }: { searchParams
       });
     } catch (e) {
       console.error("Error fetching default lender compliance:", e);
+    }
+  }
+
+  // Auto-create lead if contact parameters are provided and it doesn't already exist
+  if (email || phone) {
+    try {
+      let existingLead = null;
+      if (email) {
+        existingLead = await prisma.lead.findFirst({
+          where: {
+            email: email.trim().toLowerCase()
+          }
+        });
+      } else if (phone) {
+        existingLead = await prisma.lead.findFirst({
+          where: {
+            phone: phone.trim()
+          }
+        });
+      }
+
+      if (!existingLead) {
+        const nameParts = (name || 'Unknown').trim().split(/\s+/);
+        const firstName = nameParts[0] || 'Unknown';
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+        await prisma.lead.create({
+          data: {
+            firstName,
+            lastName,
+            email: email ? email.trim().toLowerCase() : `unknown_${Date.now()}@noemail.com`,
+            phone: phone ? phone.trim() : 'Unknown',
+            street: street || null,
+            city: city || null,
+            state: state || null,
+            situation: "Property Valuation & Refinance Estimator",
+            priceRange: "Unknown",
+            employment: "Unknown",
+            downPayment: "Unknown",
+            creditScore: "Unknown",
+            campaign: "equity-campaign",
+            lenderId: lender?.id || null,
+            status: 'NEW'
+          }
+        });
+        console.log("Auto-created lead from equity URL parameters for email/phone:", email || phone);
+      }
+    } catch (err) {
+      console.error("Failed to auto-create lead from equity URL params:", err);
     }
   }
 
@@ -70,7 +122,7 @@ export default async function PropertyValuePage({ searchParams }: { searchParams
               <div className="absolute top-full right-0 mt-0 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden flex flex-col z-50">
                 <a href={`/first${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">First Time Buyer</a>
                 <a href={`/refinance${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Refinance</a>
-                <a href={`/pv${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Home Value Estimate</a>
+                <a href={`/equity${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Property Value Estimate</a>
                 <a href={`/self-employed${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-slate-700 hover:text-blue-600">Self Employed</a>
                 <a href={`/reverse${refQuery}`} className="px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600">Reverse Mortgage</a>
               </div>

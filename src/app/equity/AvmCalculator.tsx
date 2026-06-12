@@ -150,7 +150,7 @@ export default function AvmCalculator({
   ] : [];
 
   const initialAnswers = results ? ({
-    situation: `Refinance / Cash Out - Home Value: ${formattedValuation}, Mortgage Balance: ${formattedBalance}, Est. Equity: ${formattedEquity}`,
+    situation: `Refinance / Cash Out - Property Value: ${formattedValuation}, Mortgage Balance: ${formattedBalance}, Est. Equity: ${formattedEquity}`,
     homeValue: formattedValuation,
     currentBalance: formattedBalance,
     goal: maxCashOutLimit > 0 ? "Cash Out" : "Lower My Rate"
@@ -161,10 +161,10 @@ export default function AvmCalculator({
       {/* Hero Headline Section */}
       <div className="text-center mb-10 max-w-3xl animate-fade-in">
         <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-4 leading-tight">
-          Check your home value & refinance <span className="text-blue-600">cash-out</span> equity
+          Check your property value & refinance <span className="text-blue-600">cash-out</span> equity{initialStreet ? ` at ${initialStreet}` : ""}
         </h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Enter your address to instantly estimate your home value and see how much cash you could pull out of your equity with a refinance.
+          Enter your address to instantly estimate your property value and see how much cash you could pull out of your equity with a refinance.
         </p>
       </div>
 
@@ -327,7 +327,7 @@ export default function AvmCalculator({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
                   <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase">Estimated Home Value</h4>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase">Estimated Property Value</h4>
                     <p className="text-3xl font-extrabold text-blue-600 tracking-tight mt-1">{formattedValuation}</p>
                     <div className="text-[11px] text-slate-400 mt-1">
                       Range: {formatCurrency(results.avm.range_low)} - {formatCurrency(results.avm.range_high)}

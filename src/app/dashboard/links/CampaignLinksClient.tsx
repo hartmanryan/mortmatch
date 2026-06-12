@@ -6,8 +6,17 @@ import Link from "next/link";
 
 const SCENARIOS = [
   {
+    id: "home-value-estimator",
+    title: "Home Value & Cash Out Refinance Estimator",
+    path: "/equity",
+    topic: "",
+    chatslug: "",
+    description: "Provide clients with an instant home value estimate and show their potential cash-out refinance options."
+  },
+  {
     id: "reverse-mortgage-123-main",
     title: "Reverse Mortgage (Property Specific)",
+    path: "/",
     topic: "See If A Reverse Mortgage Makes Sense at 123 Main Street",
     chatslug: "Reverse Mortgage For 123 Main Street",
     description: "Ideal for targeting a specific homeowner or property address with reverse mortgage information."
@@ -15,6 +24,7 @@ const SCENARIOS = [
   {
     id: "first-time-buyer",
     title: "First-Time Buyer Program",
+    path: "/",
     topic: "Zero-Down & Low-Down Payment Options",
     chatslug: "First-Time Buyer Programs",
     description: "Attract renters and new buyers exploring grants and low-down loan programs."
@@ -22,6 +32,7 @@ const SCENARIOS = [
   {
     id: "refinance-rates",
     title: "Refinance Rate Comparison",
+    path: "/",
     topic: "Compare Refinance Rates to Lower Your Payment",
     chatslug: "Refinancing Options",
     description: "Lower payment or cash-out marketing campaigns aimed at existing homeowners."
@@ -46,16 +57,23 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
     phone: "555-123-4567",
     street: "123 Main St",
     city: "Tampa",
-    state: "FL"
+    state: "FL",
+    zip: "33602"
   });
 
-  const getFullUrl = (topic: string, chatslug: string) => {
+  const getFullUrl = (scenario: typeof SCENARIOS[0]) => {
     const refParam = userId ? `ref=${userId}` : "";
-    const topicParam = `topic=${encodeURIComponent(topic)}`;
-    const slugParam = `chatslug=${encodeURIComponent(chatslug)}`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://mortmatch.com";
+    
+    if (scenario.path === "/equity") {
+      const params = [refParam].filter(Boolean).join("&");
+      return `${origin}/equity${params ? `?${params}` : ""}`;
+    }
+    
+    const topicParam = `topic=${encodeURIComponent(scenario.topic)}`;
+    const slugParam = `chatslug=${encodeURIComponent(scenario.chatslug)}`;
     const params = [refParam, topicParam, slugParam].filter(Boolean).join("&");
     
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://mortmatch.com";
     return `${origin}/?${params}`;
   };
 
@@ -79,6 +97,22 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
     
     const baseParams: string[] = [];
     if (userId) baseParams.push(`ref=${userId}`);
+
+    if (scenario.path === "/equity") {
+      if (integrationPreset === "thanks") {
+        baseParams.push(`street=%5Baddress%5D`);
+        baseParams.push(`city=%5Bcity%5D`);
+        baseParams.push(`state=%5Bstate%5D`);
+        baseParams.push(`zip=%5Bpostal_code%5D`);
+      } else {
+        if (mockValues.street) baseParams.push(`street=${encodeURIComponent(mockValues.street)}`);
+        if (mockValues.city) baseParams.push(`city=${encodeURIComponent(mockValues.city)}`);
+        if (mockValues.state) baseParams.push(`state=${encodeURIComponent(mockValues.state)}`);
+        if (mockValues.zip) baseParams.push(`zip=${encodeURIComponent(mockValues.zip)}`);
+      }
+      return `${origin}/equity?${baseParams.join("&")}`;
+    }
+
     baseParams.push(`topic=${encodeURIComponent(scenario.topic)}`);
     baseParams.push(`chatslug=${encodeURIComponent(scenario.chatslug)}`);
 
@@ -155,7 +189,7 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
 
         <ul className="divide-y divide-slate-150">
           {SCENARIOS.map((scenario) => {
-            const fullUrl = getFullUrl(scenario.topic, scenario.chatslug);
+            const fullUrl = getFullUrl(scenario);
             return (
               <li key={scenario.id} className="p-6 hover:bg-slate-50/40 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2 max-w-xl">
@@ -166,14 +200,25 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                   <p className="text-sm text-slate-500">{scenario.description}</p>
                   
                   {/* Parameter Details */}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 text-xs text-slate-500 font-mono">
-                    <div>
-                      <span className="font-bold text-slate-700">Headline (topic):</span> &quot;{scenario.topic}&quot;
+                  {scenario.path === "/equity" ? (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 text-xs text-slate-500 font-mono">
+                      <div>
+                        <span className="font-bold text-slate-700">Path:</span> &quot;/equity&quot;
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-700">Parameters:</span> street, city, state, zip
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-bold text-slate-700">Greeting (chatslug):</span> &quot;{scenario.chatslug}&quot;
+                  ) : (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 text-xs text-slate-500 font-mono">
+                      <div>
+                        <span className="font-bold text-slate-700">Headline (topic):</span> &quot;{scenario.topic}&quot;
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-700">Greeting (chatslug):</span> &quot;{scenario.chatslug}&quot;
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Actions: Preview -> Copy Link -> Get Traffic */}
@@ -279,47 +324,60 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                     <CheckCircle className="w-3.5 h-3.5" /> Done-For-You Placeholders Enabled
                   </h4>
                   <p>We have mapped the following standard Thanks.io recipient placeholders onto the URL parameters:</p>
-                  <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
-                    <li>name = <span className="font-bold text-orange-700">[first_name] [last_name]</span></li>
-                    <li>email = <span className="font-bold text-orange-700">[email]</span></li>
-                    <li>phone = <span className="font-bold text-orange-700">[phone]</span></li>
-                    <li>street = <span className="font-bold text-orange-700">[address]</span></li>
-                    <li>city = <span className="font-bold text-orange-700">[city]</span></li>
-                    <li>state = <span className="font-bold text-orange-700">[state]</span></li>
-                  </ul>
+                  {(SCENARIOS.find(s => s.id === selectedTemplate)?.path === "/equity") ? (
+                    <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
+                      <li>street = <span className="font-bold text-orange-700">[address]</span></li>
+                      <li>city = <span className="font-bold text-orange-700">[city]</span></li>
+                      <li>state = <span className="font-bold text-orange-700">[state]</span></li>
+                      <li>zip = <span className="font-bold text-orange-700">[postal_code]</span></li>
+                    </ul>
+                  ) : (
+                    <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
+                      <li>name = <span className="font-bold text-orange-700">[first_name] [last_name]</span></li>
+                      <li>email = <span className="font-bold text-orange-700">[email]</span></li>
+                      <li>phone = <span className="font-bold text-orange-700">[phone]</span></li>
+                      <li>street = <span className="font-bold text-orange-700">[address]</span></li>
+                      <li>city = <span className="font-bold text-orange-700">[city]</span></li>
+                      <li>state = <span className="font-bold text-orange-700">[state]</span></li>
+                    </ul>
+                  )}
                   <p className="pt-2 text-slate-500 italic">Copy the generated URL below and paste it directly into your thanks.io campaign dashboard destination link.</p>
                 </div>
               ) : (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3.5">
                   <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wider">Test Values Simulator</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Name</label>
-                      <input 
-                        type="text" 
-                        value={mockValues.name} 
-                        onChange={(e) => setMockValues({...mockValues, name: e.target.value})}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email</label>
-                      <input 
-                        type="email" 
-                        value={mockValues.email} 
-                        onChange={(e) => setMockValues({...mockValues, email: e.target.value})}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phone</label>
-                      <input 
-                        type="text" 
-                        value={mockValues.phone} 
-                        onChange={(e) => setMockValues({...mockValues, phone: e.target.value})}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
-                      />
-                    </div>
+                    {(SCENARIOS.find(s => s.id === selectedTemplate)?.path !== "/equity") && (
+                      <>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Name</label>
+                          <input 
+                            type="text" 
+                            value={mockValues.name} 
+                            onChange={(e) => setMockValues({...mockValues, name: e.target.value})}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email</label>
+                          <input 
+                            type="email" 
+                            value={mockValues.email} 
+                            onChange={(e) => setMockValues({...mockValues, email: e.target.value})}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phone</label>
+                          <input 
+                            type="text" 
+                            value={mockValues.phone} 
+                            onChange={(e) => setMockValues({...mockValues, phone: e.target.value})}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
+                          />
+                        </div>
+                      </>
+                    )}
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Street Address</label>
                       <input 
@@ -347,6 +405,17 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                         className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
                       />
                     </div>
+                    {SCENARIOS.find(s => s.id === selectedTemplate)?.path === "/equity" && (
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Zip Code</label>
+                        <input 
+                          type="text" 
+                          value={mockValues.zip} 
+                          onChange={(e) => setMockValues({...mockValues, zip: e.target.value})}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
