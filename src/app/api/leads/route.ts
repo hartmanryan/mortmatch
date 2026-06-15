@@ -47,29 +47,69 @@ export async function POST(request: Request) {
     // 1. Save to Database using Prisma
     let lead;
     try {
-      lead = await prisma.lead.create({
-        data: {
-          firstName,
-          lastName,
-          email: contact.email || `${contact.phone.replace(/\D/g, '') || 'unknown'}@noemail.com`,
-          phone: contact.phone || 'Unknown',
-          street: contact.street || null,
-          city: contact.city || null,
-          state: contact.state || null,
-          situation,
-          priceRange,
-          employment,
-          downPayment,
-          creditScore,
-          campaign: campaign || "general",
-          timeline: contact.preferredTime || timeline,
-          location,
-          rawAnswers: answers, // Save the complete dynamic answers object
-          status: 'NEW',
-          lenderId: lender?.id || null,
-        },
-      });
-      console.log("Lead created successfully:", lead.id);
+      const targetEmail = contact.email ? contact.email.trim().toLowerCase() : `${contact.phone.replace(/\D/g, '') || 'unknown'}@noemail.com`;
+      const targetPhone = contact.phone || 'Unknown';
+
+      // Check if lead already exists based on email or phone
+      let existingLead = null;
+      if (contact.email) {
+        existingLead = await prisma.lead.findFirst({
+          where: { email: targetEmail }
+        });
+      } else if (contact.phone && contact.phone !== 'Unknown') {
+        existingLead = await prisma.lead.findFirst({
+          where: { phone: targetPhone }
+        });
+      }
+
+      if (existingLead) {
+        // Update the existing lead with any new answers/contact info
+        lead = await prisma.lead.update({
+          where: { id: existingLead.id },
+          data: {
+            firstName: firstName !== 'Unknown' ? firstName : existingLead.firstName,
+            lastName: lastName !== '' ? lastName : existingLead.lastName,
+            street: contact.street || existingLead.street,
+            city: contact.city || existingLead.city,
+            state: contact.state || existingLead.state,
+            situation: situation !== 'Unknown' ? situation : existingLead.situation,
+            priceRange: priceRange !== 'Unknown' ? priceRange : existingLead.priceRange,
+            employment: employment !== 'Unknown' ? employment : existingLead.employment,
+            downPayment: downPayment !== 'Unknown' ? downPayment : existingLead.downPayment,
+            creditScore: creditScore !== 'Unknown' ? creditScore : existingLead.creditScore,
+            timeline: contact.preferredTime || timeline || existingLead.timeline,
+            location: location || existingLead.location,
+            rawAnswers: answers ? { ...(existingLead.rawAnswers as Record<string, any> || {}), ...answers } : existingLead.rawAnswers,
+            lenderId: lender?.id || existingLead.lenderId,
+          }
+        });
+        console.log("Lead updated successfully:", lead.id);
+      } else {
+        // Create new lead
+        lead = await prisma.lead.create({
+          data: {
+            firstName,
+            lastName,
+            email: targetEmail,
+            phone: targetPhone,
+            street: contact.street || null,
+            city: contact.city || null,
+            state: contact.state || null,
+            situation,
+            priceRange,
+            employment,
+            downPayment,
+            creditScore,
+            campaign: campaign || "general",
+            timeline: contact.preferredTime || timeline,
+            location,
+            rawAnswers: answers,
+            status: 'NEW',
+            lenderId: lender?.id || null,
+          },
+        });
+        console.log("Lead created successfully:", lead.id);
+      }
     } catch (dbError) {
       console.error("Database Error:", dbError);
       return NextResponse.json({ error: 'Failed to save lead to database.' }, { status: 500 });
