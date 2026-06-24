@@ -47,6 +47,7 @@ model Lender {
   firstName      String?
   lastName       String?
   companyName    String?
+  companyAddress String?
   nmls           String?
   phone          String?
   email          String   @unique

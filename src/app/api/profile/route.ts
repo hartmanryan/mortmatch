@@ -34,7 +34,7 @@ export async function GET(request: Request) {
           where: { email: normalizedEmail },
           data: { 
             authUserId: clerkId,
-            ...(normalizedEmail === 'propknocks@gmail.com' ? { isAdmin: true } : {})
+            ...(normalizedEmail === 'propknocks@gmail.com' || normalizedEmail === 'gosunline@gmail.com' ? { isAdmin: true } : {})
           }
         });
       }
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    let { clerkId, email, firstName, lastName, companyName, nmls, phone } = body;
+    let { clerkId, email, firstName, lastName, companyName, companyAddress, nmls, phone } = body;
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
     if (lender) {
       // Update existing record
-      const isSuperAdminEmail = targetEmail.toLowerCase() === 'propknocks@gmail.com';
+      const isSuperAdminEmail = targetEmail.toLowerCase() === 'propknocks@gmail.com' || targetEmail.toLowerCase() === 'gosunline@gmail.com';
       lender = await prisma.lender.update({
         where: { email: targetEmail },
         data: {
@@ -93,6 +93,7 @@ export async function POST(request: Request) {
           firstName,
           lastName,
           companyName,
+          companyAddress,
           nmls,
           phone,
           ...(isSuperAdminEmail ? { isAdmin: true } : {})
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
       });
     } else {
       // Create new record
-      const isSuperAdminEmail = targetEmail.toLowerCase() === 'propknocks@gmail.com';
+      const isSuperAdminEmail = targetEmail.toLowerCase() === 'propknocks@gmail.com' || targetEmail.toLowerCase() === 'gosunline@gmail.com';
       lender = await prisma.lender.create({
         data: {
           authUserId: targetClerkId || null,
@@ -108,6 +109,7 @@ export async function POST(request: Request) {
           firstName,
           lastName,
           companyName,
+          companyAddress,
           nmls,
           phone,
           isAdmin: isSuperAdminEmail

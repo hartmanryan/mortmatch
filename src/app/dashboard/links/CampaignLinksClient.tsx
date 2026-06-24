@@ -100,10 +100,10 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
 
     if (scenario.path === "/equity") {
       if (integrationPreset === "thanks") {
-        baseParams.push(`street=%5Baddress%5D`);
-        baseParams.push(`city=%5Bcity%5D`);
-        baseParams.push(`state=%5Bstate%5D`);
-        baseParams.push(`zip=%5Bpostal_code%5D`);
+        baseParams.push(`street=~ADDRESS~`);
+        baseParams.push(`city=~CITY~`);
+        baseParams.push(`state=~STATE~`);
+        baseParams.push(`zip=~ZIP~`);
       } else {
         if (mockValues.street) baseParams.push(`street=${encodeURIComponent(mockValues.street)}`);
         if (mockValues.city) baseParams.push(`city=${encodeURIComponent(mockValues.city)}`);
@@ -117,12 +117,12 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
     baseParams.push(`chatslug=${encodeURIComponent(scenario.chatslug)}`);
 
     if (integrationPreset === "thanks") {
-      baseParams.push(`name=%5Bfirst_name%5D+%5Blast_name%5D`);
-      baseParams.push(`email=%5Bemail%5D`);
-      baseParams.push(`phone=%5Bphone%5D`);
-      baseParams.push(`street=%5Baddress%5D`);
-      baseParams.push(`city=%5Bcity%5D`);
-      baseParams.push(`state=%5Bstate%5D`);
+      baseParams.push(`name=~FIRST_NAME~+~LAST_NAME~`);
+      baseParams.push(`email=~EMAIL~`);
+      baseParams.push(`phone=~PHONE~`);
+      baseParams.push(`street=~ADDRESS~`);
+      baseParams.push(`city=~CITY~`);
+      baseParams.push(`state=~STATE~`);
     } else {
       if (mockValues.name) baseParams.push(`name=${encodeURIComponent(mockValues.name)}`);
       if (mockValues.email) baseParams.push(`email=${encodeURIComponent(mockValues.email)}`);
@@ -326,19 +326,19 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                   <p>We have mapped the following standard Thanks.io recipient placeholders onto the URL parameters:</p>
                   {(SCENARIOS.find(s => s.id === selectedTemplate)?.path === "/equity") ? (
                     <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
-                      <li>street = <span className="font-bold text-orange-700">[address]</span></li>
-                      <li>city = <span className="font-bold text-orange-700">[city]</span></li>
-                      <li>state = <span className="font-bold text-orange-700">[state]</span></li>
-                      <li>zip = <span className="font-bold text-orange-700">[postal_code]</span></li>
+                      <li>street = <span className="font-bold text-orange-700">~ADDRESS~</span></li>
+                      <li>city = <span className="font-bold text-orange-700">~CITY~</span></li>
+                      <li>state = <span className="font-bold text-orange-700">~STATE~</span></li>
+                      <li>zip = <span className="font-bold text-orange-700">~ZIP~</span></li>
                     </ul>
                   ) : (
                     <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
-                      <li>name = <span className="font-bold text-orange-700">[first_name] [last_name]</span></li>
-                      <li>email = <span className="font-bold text-orange-700">[email]</span></li>
-                      <li>phone = <span className="font-bold text-orange-700">[phone]</span></li>
-                      <li>street = <span className="font-bold text-orange-700">[address]</span></li>
-                      <li>city = <span className="font-bold text-orange-700">[city]</span></li>
-                      <li>state = <span className="font-bold text-orange-700">[state]</span></li>
+                      <li>name = <span className="font-bold text-orange-700">~FIRST_NAME~ ~LAST_NAME~</span></li>
+                      <li>email = <span className="font-bold text-orange-700">~EMAIL~</span></li>
+                      <li>phone = <span className="font-bold text-orange-700">~PHONE~</span></li>
+                      <li>street = <span className="font-bold text-orange-700">~ADDRESS~</span></li>
+                      <li>city = <span className="font-bold text-orange-700">~CITY~</span></li>
+                      <li>state = <span className="font-bold text-orange-700">~STATE~</span></li>
                     </ul>
                   )}
                   <p className="pt-2 text-slate-500 italic">Copy the generated URL below and paste it directly into your thanks.io campaign dashboard destination link.</p>

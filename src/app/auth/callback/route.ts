@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       if (user.email) {
         try {
           const normalizedEmail = user.email.toLowerCase();
-          const isSuperAdminEmail = normalizedEmail === 'propknocks@gmail.com';
+          const isSuperAdminEmail = normalizedEmail === 'propknocks@gmail.com' || normalizedEmail === 'gosunline@gmail.com';
           const lender = await prisma.lender.findUnique({
             where: { email: normalizedEmail }
           });

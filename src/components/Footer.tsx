@@ -5,6 +5,7 @@ type FooterProps = {
     firstName: string | null;
     lastName: string | null;
     companyName: string | null;
+    companyAddress: string | null;
     nmls: string | null;
     phone: string | null;
   } | null;
@@ -19,6 +20,7 @@ export default function Footer({ lender, showProLink = true }: FooterProps) {
           <div className="space-y-1">
             <p className="font-semibold text-slate-700">Provided by {lender.firstName} {lender.lastName}</p>
             {lender.companyName && <p>{lender.companyName}</p>}
+            {lender.companyAddress && <p>{lender.companyAddress}</p>}
             {lender.nmls && <p>NMLS #{lender.nmls}</p>}
             {lender.phone && <p>Phone: {lender.phone}</p>}
             <p className="pt-2 text-slate-400 max-w-2xl mx-auto">

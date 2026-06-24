@@ -8,6 +8,7 @@ type ProfileFormProps = {
     firstName: string | null;
     lastName: string | null;
     companyName: string | null;
+    companyAddress: string | null;
     nmls: string | null;
     phone: string | null;
   } | null;
@@ -19,6 +20,7 @@ export default function ProfileForm({ initialLender }: ProfileFormProps) {
     firstName: initialLender?.firstName || "",
     lastName: initialLender?.lastName || "",
     companyName: initialLender?.companyName || "",
+    companyAddress: initialLender?.companyAddress || "",
     nmls: initialLender?.nmls || "",
     phone: initialLender?.phone || ""
   });
@@ -88,6 +90,16 @@ export default function ProfileForm({ initialLender }: ProfileFormProps) {
               type="text"
               value={profile.nmls}
               onChange={e => setProfile({...profile, nmls: e.target.value})}
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-semibold text-slate-700">Company Address</label>
+            <input
+              type="text"
+              value={profile.companyAddress}
+              onChange={e => setProfile({...profile, companyAddress: e.target.value})}
+              placeholder="e.g. 123 Main St, Suite 100, City, State ZIP"
               className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>

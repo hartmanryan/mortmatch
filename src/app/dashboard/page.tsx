@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   let leads: any[] = [];
   if (lender) {
     try {
-      const isDefaultAdmin = lender.email === 'propknocks@gmail.com';
+      const isDefaultAdmin = lender.isAdmin;
       leads = await prisma.lead.findMany({
         where: isDefaultAdmin
           ? {
