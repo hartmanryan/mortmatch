@@ -246,13 +246,6 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                       <><Copy className="w-4 h-4" /> Copy Link</>
                     )}
                   </button>
-
-                  <Link
-                    href="/dashboard/leads"
-                    className="flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
-                  >
-                    Get Traffic
-                  </Link>
                 </div>
               </li>
             );
