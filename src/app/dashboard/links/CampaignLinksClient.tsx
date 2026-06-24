@@ -100,6 +100,9 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
 
     if (scenario.path === "/equity") {
       if (integrationPreset === "thanks") {
+        baseParams.push(`name=~FIRST_NAME~+~LAST_NAME~`);
+        baseParams.push(`email=~EMAIL~`);
+        baseParams.push(`phone=~PHONE~`);
         baseParams.push(`street=~ADDRESS~`);
         baseParams.push(`city=~CITY~`);
         baseParams.push(`state=~STATE~`);
@@ -326,6 +329,9 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                   <p>We have mapped the following standard Thanks.io recipient placeholders onto the URL parameters:</p>
                   {(SCENARIOS.find(s => s.id === selectedTemplate)?.path === "/equity") ? (
                     <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
+                      <li>name = <span className="font-bold text-orange-700">~FIRST_NAME~ ~LAST_NAME~</span></li>
+                      <li>email = <span className="font-bold text-orange-700">~EMAIL~</span></li>
+                      <li>phone = <span className="font-bold text-orange-700">~PHONE~</span></li>
                       <li>street = <span className="font-bold text-orange-700">~ADDRESS~</span></li>
                       <li>city = <span className="font-bold text-orange-700">~CITY~</span></li>
                       <li>state = <span className="font-bold text-orange-700">~STATE~</span></li>
