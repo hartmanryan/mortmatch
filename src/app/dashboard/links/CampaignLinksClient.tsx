@@ -58,7 +58,8 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
     street: "123 Main St",
     city: "Tampa",
     state: "FL",
-    zip: "33602"
+    zip: "33602",
+    partner: "CustomPartner"
   });
 
   const getFullUrl = (scenario: typeof SCENARIOS[0]) => {
@@ -107,11 +108,13 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
         baseParams.push(`city=~CITY~`);
         baseParams.push(`state=~STATE~`);
         baseParams.push(`zip=~ZIP~`);
+        baseParams.push(`partner=thanks.io`);
       } else {
         if (mockValues.street) baseParams.push(`street=${encodeURIComponent(mockValues.street)}`);
         if (mockValues.city) baseParams.push(`city=${encodeURIComponent(mockValues.city)}`);
         if (mockValues.state) baseParams.push(`state=${encodeURIComponent(mockValues.state)}`);
         if (mockValues.zip) baseParams.push(`zip=${encodeURIComponent(mockValues.zip)}`);
+        if (mockValues.partner) baseParams.push(`partner=${encodeURIComponent(mockValues.partner)}`);
       }
       return `${origin}/equity?${baseParams.join("&")}`;
     }
@@ -126,6 +129,7 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
       baseParams.push(`street=~ADDRESS~`);
       baseParams.push(`city=~CITY~`);
       baseParams.push(`state=~STATE~`);
+      baseParams.push(`partner=thanks.io`);
     } else {
       if (mockValues.name) baseParams.push(`name=${encodeURIComponent(mockValues.name)}`);
       if (mockValues.email) baseParams.push(`email=${encodeURIComponent(mockValues.email)}`);
@@ -133,6 +137,7 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
       if (mockValues.street) baseParams.push(`street=${encodeURIComponent(mockValues.street)}`);
       if (mockValues.city) baseParams.push(`city=${encodeURIComponent(mockValues.city)}`);
       if (mockValues.state) baseParams.push(`state=${encodeURIComponent(mockValues.state)}`);
+      if (mockValues.partner) baseParams.push(`partner=${encodeURIComponent(mockValues.partner)}`);
     }
 
     return `${origin}/?${baseParams.join("&")}`;
@@ -329,6 +334,7 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                       <li>city = <span className="font-bold text-orange-700">~CITY~</span></li>
                       <li>state = <span className="font-bold text-orange-700">~STATE~</span></li>
                       <li>zip = <span className="font-bold text-orange-700">~ZIP~</span></li>
+                      <li>partner = <span className="font-bold text-orange-700">thanks.io</span></li>
                     </ul>
                   ) : (
                     <ul className="list-disc list-inside space-y-1 font-mono text-slate-700 pl-1">
@@ -338,6 +344,7 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                       <li>street = <span className="font-bold text-orange-700">~ADDRESS~</span></li>
                       <li>city = <span className="font-bold text-orange-700">~CITY~</span></li>
                       <li>state = <span className="font-bold text-orange-700">~STATE~</span></li>
+                      <li>partner = <span className="font-bold text-orange-700">thanks.io</span></li>
                     </ul>
                   )}
                   <p className="pt-2 text-slate-500 italic">Copy the generated URL below and paste it directly into your thanks.io campaign dashboard destination link.</p>
@@ -415,6 +422,15 @@ export default function CampaignLinksClient({ userId }: CampaignLinksClientProps
                         />
                       </div>
                     )}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Partner</label>
+                      <input 
+                        type="text" 
+                        value={mockValues.partner} 
+                        onChange={(e) => setMockValues({...mockValues, partner: e.target.value})}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none text-slate-800"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
