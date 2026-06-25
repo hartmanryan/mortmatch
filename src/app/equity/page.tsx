@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import Footer from "@/components/Footer";
 import AvmCalculator from "./AvmCalculator";
 
-export default async function PropertyValuePage({ searchParams }: { searchParams: Promise<{ ref?: string, street?: string, street2?: string, city?: string, state?: string, zip?: string, estmortgage?: string, name?: string, email?: string, phone?: string }> }) {
+export default async function PropertyValuePage({ searchParams }: { searchParams: Promise<{ ref?: string, street?: string, street2?: string, city?: string, state?: string, zip?: string, estmortgage?: string, name?: string, email?: string, phone?: string, partner?: string }> }) {
   const params = await searchParams;
   const ref = params.ref;
   const street = params.street;
@@ -15,6 +15,7 @@ export default async function PropertyValuePage({ searchParams }: { searchParams
   const name = params.name;
   const email = params.email;
   const phone = params.phone;
+  const partner = params.partner;
 
   let lender = null;
   if (ref) {
@@ -82,6 +83,7 @@ export default async function PropertyValuePage({ searchParams }: { searchParams
             creditScore: "Unknown",
             campaign: "equity-campaign",
             lenderId: lender?.id || null,
+            partner: partner || null,
             status: 'NEW'
           }
         });

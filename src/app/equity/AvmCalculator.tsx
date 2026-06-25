@@ -225,18 +225,15 @@ export default function AvmCalculator({
                   <label htmlFor="state" className="block text-xs font-semibold text-slate-500 mb-1.5">
                     State
                   </label>
-                  <select
+                  <input
                     id="state"
+                    type="text"
                     required
+                    placeholder="State"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white text-slate-700"
-                  >
-                    <option value="" disabled>State</option>
-                    {US_STATES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div>
