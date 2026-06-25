@@ -67,6 +67,7 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
   const [leadId, setLeadId] = useState<string | null>(null);
 
   const refId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("ref") : null;
+  const partner = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("partner") : null;
 
   const activeLenderName = matchedLender?.name || lenderName;
   const activeLenderPhone = matchedLender?.phone || lenderPhone;
@@ -226,6 +227,7 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
                 },
                 campaign: campaignName,
                 refId,
+                partner,
               }),
             });
             const data = await response.json();
@@ -301,11 +303,12 @@ export default function ChatForm({ steps, campaignName, lenderName, lenderPhone,
 
     try {
       const refId = new URLSearchParams(window.location.search).get("ref");
+      const partner = new URLSearchParams(window.location.search).get("partner");
       
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, contact, campaign: campaignName, refId })
+        body: JSON.stringify({ answers, contact, campaign: campaignName, refId, partner })
       });
       
       setIsTyping(false);

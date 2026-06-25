@@ -27,6 +27,7 @@ interface Lead {
   state: string | null;
   chatTranscript: any;
   status: string;
+  partner?: string | null;
   createdAt: string;
 }
 
@@ -125,6 +126,7 @@ export default function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                           <div className="text-xs text-slate-500 font-medium">{lead.email}</div>
                           <div className="text-xs text-slate-500 font-medium">{lead.phone}</div>
                           {lead.location && <div className="text-xs text-blue-600 font-medium mt-1">📍 {lead.location}</div>}
+                          {lead.partner && <div className="text-xs text-purple-600 font-semibold mt-1">🤝 Partner: {lead.partner}</div>}
                         </td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-semibold capitalize border border-slate-200">
@@ -169,6 +171,14 @@ export default function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                                         <div className="text-slate-400 font-medium">Address:</div>
                                         <div className="text-slate-800 font-semibold">
                                           {lead.street}, {lead.city}, {lead.state}
+                                        </div>
+                                      </>
+                                    )}
+                                    {lead.partner && (
+                                      <>
+                                        <div className="text-slate-400 font-medium">Partner:</div>
+                                        <div className="text-slate-800 font-semibold text-purple-600">
+                                          {lead.partner}
                                         </div>
                                       </>
                                     )}

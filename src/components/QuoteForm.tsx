@@ -82,10 +82,11 @@ export default function QuoteForm() {
     setIsSubmitting(true);
     
     try {
+      const partner = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("partner") : null;
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, contact })
+        body: JSON.stringify({ answers, contact, partner })
       });
       
       if (response.ok) {

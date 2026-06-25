@@ -16,6 +16,7 @@ model Lead {
   
   // Dynamic fields for specific campaigns
   campaign       String   @default("general")
+  partner        String?
   timeline       String?
   location       String?
   rawAnswers     Json?

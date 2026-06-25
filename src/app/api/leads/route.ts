@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_test123'); // Dummy 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { answers, contact, campaign, refId } = body;
+    const { answers, contact, campaign, refId, partner } = body;
 
     // Parse the new dictionary format using the step IDs
     const situation = answers["situation"] || "Unknown";
@@ -81,6 +81,7 @@ export async function POST(request: Request) {
             location: location || existingLead.location,
             rawAnswers: answers ? { ...(existingLead.rawAnswers as Record<string, any> || {}), ...answers } : existingLead.rawAnswers,
             lenderId: lender?.id || existingLead.lenderId,
+            partner: partner || existingLead.partner,
           }
         });
         console.log("Lead updated successfully:", lead.id);
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
             rawAnswers: answers,
             status: 'NEW',
             lenderId: lender?.id || null,
+            partner: partner || null,
           },
         });
         console.log("Lead created successfully:", lead.id);
@@ -185,6 +187,7 @@ export async function POST(request: Request) {
             <p><strong>Email:</strong> ${contact.email}</p>
             <p><strong>Phone:</strong> ${contact.phone}</p>
             <p><strong>Address:</strong> ${contact.street || 'N/A'}, ${contact.city || 'N/A'}, ${contact.state || 'N/A'}</p>
+            ${partner ? `<p><strong>Partner:</strong> ${partner}</p>` : ''}
             <hr />
             <h3>Lead Questionnaire Answers:</h3>
             ${Object.entries(answers).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
